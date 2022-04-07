@@ -7,6 +7,7 @@ open import Cubical.Categories.Category
 open import Cubical.Categories.Functor
 open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.Limits.Base
+open import Cubical.Categories.Morphism
 
 open import Cubical.Data.Sigma
 
@@ -14,15 +15,16 @@ private
   variable
     ℓJ ℓJ' ℓC ℓC' ℓD ℓD' : Level
 
+open Precategory
+open Functor
+open isLimit
+open Limit
+open NatTrans
+open CatIso
+
 module _ {J : Precategory ℓJ ℓJ'}
          {C : Precategory ℓC ℓC'}
          {F : Functor J C} where
-
-  open Precategory
-  open Functor
-  open isLimit
-  open Limit
-  open NatTrans
 
   module _ (L : Limit F) where
   
@@ -65,8 +67,6 @@ module _ {J : Precategory ℓJ ℓJ'}
 
       homToLimPath : {x : C .ob} → (f g : C [ x , head L ]) → ((j : J .ob) → f ⋆⟨ C ⟩ proj j ≡ g ⋆⟨ C ⟩ proj j) → f ≡ g
       homToLimPath {x} f g compProj = carCanFact (inducedCone g) f compProj ∙ canFactIndCone g
-
-  open CatIso
     
   unicityLim : ⦃ isCatC : isCategory C ⦄ → (L L' : Limit F) → CatIso {C = C} (head L) (head L')
   unicityLim L L' = isom
@@ -109,31 +109,30 @@ module _ {J : Precategory ℓJ ℓJ'}
 module _ {J : Precategory ℓJ ℓJ'}
          {C : Precategory ℓC ℓC'}
          {D : Precategory ℓD ℓD'}
-         (G : Functor C D)
          (F : Functor J C)
+         (G : Functor C D)
          (L : Limit F)
          (L' : Limit (G ∘F F)) where
-  open Precategory
-  open Functor
-  open Limit
-  open isLimit
-  open NatTrans
   
-  canonicalMap : D [ G ⟅ head L ⟆ , head L' ]
-  canonicalMap = canonicalFact L' c
+  canonicalMapComp : D [ G ⟅ head L ⟆ , head L' ]
+  canonicalMapComp = canonicalFact L' c
     where
     c : Cone (G ∘F F) (G ⟅ head L ⟆)
     N-ob c  j = G ⟪ N-ob (cone (islim L)) j ⟫
     N-hom c {j} {j'} f =
-      id D (G ⟅ head L ⟆) ⋆⟨ D ⟩ G ⟪ N-ob (cone (islim L)) j' ⟫        ≡⟨ ⋆IdL D (G ⟪ N-ob (cone (islim L)) j' ⟫) ⟩
-      G ⟪ N-ob (cone (islim L)) j' ⟫                                   ≡⟨ cong (λ f → G ⟪ f ⟫) (sym (⋆IdL C (N-ob (cone (islim L)) j'))) ⟩
-      G ⟪ id C (head L) ⋆⟨ C ⟩  N-ob (cone (islim L)) j' ⟫             ≡⟨ cong (λ f → G ⟪ f ⟫) (N-hom (cone (islim L)) f) ⟩
-      G ⟪ (N-ob (cone (islim L)) j) ⋆⟨ C ⟩  F ⟪ f ⟫ ⟫                  ≡⟨ F-seq G (N-ob (cone (islim L)) j) (F ⟪ f ⟫) ⟩
-      G ⟪ N-ob (cone (islim L)) j ⟫ ⋆⟨ D ⟩ (G ⟪ F ⟪ f ⟫ ⟫)             ∎
+      id D (G ⟅ head L ⟆) ⋆⟨ D ⟩ G ⟪ N-ob (cone (islim L)) j' ⟫
+          ≡⟨ ⋆IdL D (G ⟪ N-ob (cone (islim L)) j' ⟫) ⟩
+      G ⟪ N-ob (cone (islim L)) j' ⟫
+          ≡⟨ cong (λ f → G ⟪ f ⟫) (sym (⋆IdL C (N-ob (cone (islim L)) j'))) ⟩
+      G ⟪ id C (head L) ⋆⟨ C ⟩  N-ob (cone (islim L)) j' ⟫
+          ≡⟨ cong (λ f → G ⟪ f ⟫) (N-hom (cone (islim L)) f) ⟩
+      G ⟪ (N-ob (cone (islim L)) j) ⋆⟨ C ⟩  F ⟪ f ⟫ ⟫
+          ≡⟨ F-seq G (N-ob (cone (islim L)) j) (F ⟪ f ⟫) ⟩
+      G ⟪ N-ob (cone (islim L)) j ⟫ ⋆⟨ D ⟩ (G ⟪ F ⟪ f ⟫ ⟫) ∎
 
   open CatIso
 
   preservesLimit : Type ℓD'
-  preservesLimit = Σ[ isom ∈ CatIso {C = D} (G ⟅ head L ⟆) (head L') ] ((mor isom) ≡ canonicalMap)
+  preservesLimit = isIso {C = D} canonicalMapComp 
 
   

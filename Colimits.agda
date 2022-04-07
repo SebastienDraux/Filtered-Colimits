@@ -15,6 +15,8 @@ open import Cubical.Data.SumFin using (Fin)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Nat
 
+open import Limits
+
 private
   variable
     ℓJ ℓJ' ℓC ℓC' : Level
@@ -23,17 +25,20 @@ private
 module _ {J : Precategory ℓJ ℓJ'}
          {C : Precategory ℓC ℓC'} where
   open Precategory
+  open Limit
 
-  Cocone : (K : Functor J C) → C .ob → Type _
-  Cocone K x = Cone (K ^opF) x
+  Cocone : (F : Functor J C) → C .ob → Type _
+  Cocone F x = Cone (F ^opF) x
 
-  module _ (K : Functor J C) where
+  module _ (F : Functor J C) where
 
     isColimit : (tail : C .ob) → Type (ℓ-max (ℓ-max ℓJ ℓJ') (ℓ-max ℓC ℓC'))
-    isColimit tail = isLimit (K ^opF) tail
+    isColimit tail = isLimit (F ^opF) tail
 
     Colimit : Type (ℓ-max (ℓ-max ℓJ ℓJ') (ℓ-max ℓC ℓC'))
-    Colimit = Limit (K ^opF)
+    Colimit = Limit (F ^opF)
+  
+  coproj = proj
 
 
 module _ where
@@ -72,7 +77,7 @@ module _ where
   isCategoryDisceteFinCat {suc n} .isSetHom {inr tt} {inl y} =  isProp→isSet isProp⊥
   isCategoryDisceteFinCat {suc n} .isSetHom {inr tt} {inr tt} = isSetUnit
 
-  ⊥-cat = discreteFinCat 1
+  ⊥-cat = discreteFinCat 0
   ⊤+⊤-cat = discreteFinCat 2
 
   -- Category with 2 objects and 2 parallel arrows
@@ -119,8 +124,6 @@ module _ where
     field
       cat : Precategory ℓ ℓ'
       isfiltered : isFilteredCategory cat
-
-open filteredCategory
 
 module _ {J : Precategory ℓJ ℓJ'}
          {C : Precategory ℓC ℓC'}
