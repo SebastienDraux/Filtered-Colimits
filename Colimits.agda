@@ -40,6 +40,8 @@ module _ {J : Precategory ℓJ ℓJ'}
   
   coproj = proj
 
+hasColimitShape :  {ℓJ ℓJ' ℓC ℓC' : Level} → (J : Precategory ℓJ ℓJ') → (C : Precategory ℓC ℓC') → Type (ℓ-max (ℓ-max (ℓ-max ℓJ ℓJ') ℓC) ℓC')
+hasColimitShape J C = (F : Functor J C) → Colimit F
 
 module _ where
   open Precategory

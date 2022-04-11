@@ -4,10 +4,11 @@ open import Cubical.Foundations.Prelude
 
 open import Cubical.Categories.Category
 open import Cubical.Categories.Functor
+open import Cubical.Foundations.GroupoidLaws
 
 private
   variable
-    ℓC ℓC' ℓD ℓD' ℓE ℓE' : Level
+    ℓ ℓC ℓC' ℓD ℓD' ℓE ℓE' : Level
     C : Precategory ℓC ℓC'
     D : Precategory ℓD ℓD'
     E : Precategory ℓE ℓE'
@@ -15,11 +16,26 @@ private
 open Functor
 open Precategory
 
-^opF-invol : {C : Precategory ℓC ℓC'} → {D : Precategory ℓD ℓD'} → (F : Functor C D) → (F ^opF) ^opF ≡ F
-^opF-invol F i .F-ob = F-ob F
-^opF-invol F i .F-hom = F-hom F
-^opF-invol F i .F-id = F-id F
-^opF-invol F i .F-seq = F-seq F
+module _ {C : Precategory ℓC ℓC'}
+         {D : Precategory ℓD ℓD'}
+         (F : Functor C D) where
+         
+  ^opF-invol : (F ^opF) ^opF ≡ F
+  ^opF-invol i .F-ob = F-ob F
+  ^opF-invol i .F-hom = F-hom F
+  ^opF-invol i .F-id = F-id F
+  ^opF-invol i .F-seq = F-seq F
+
+  module _ (P : Functor C D → Type ℓ) where
+
+    elim-^opF : P ((F ^opF) ^opF) → P F
+    elim-^opF = subst P ^opF-invol
+
+    intro-^opF : P F → P ((F ^opF) ^opF)
+    intro-^opF = subst P (sym ^opF-invol)
+
+    --elim-intro-^opF : (p : P F) → elim-^opF (intro-^opF p) ≡ p
+    --elim-intro-^opF p = {!!} ∙ cong (λ q → subst P q p) (lCancel ^opF-invol) ∙ substRefl {B = P} p
 
 ^opF-id : (𝟙⟨ C ⟩) ^opF ≡ 𝟙⟨ C ^op ⟩
 ^opF-id i .F-ob x = x

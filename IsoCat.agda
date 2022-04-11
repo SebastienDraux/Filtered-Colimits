@@ -4,6 +4,7 @@
 open import Cubical.Foundations.Prelude
 open import Cubical.Categories.Category
 open import Cubical.Categories.Functor
+open import Cubical.Categories.Morphism
 
 private
   variable
@@ -33,13 +34,15 @@ module _ {C : Precategory ℓC ℓC'} where
     F ⟪ id C x ⟫ ≡⟨ F-id F ⟩
     id D (F ⟅ x ⟆) ∎
 
+  makeIso : {x y : C .ob} → (f : CatIso {C = C} x y) → (g : C [ x , y ]) → mor f ≡ g → isIso {C = C} g
+  makeIso f g p = record { inv = inv f ; sec = cong (λ h → inv f ⋆⟨ C ⟩ h) (sym p) ∙ sec f ; ret = cong (λ h → h ⋆⟨ C ⟩ inv f) (sym p) ∙ ret f }
+
   idIso : (x : C .ob) → CatIso {C = C} x x
   idIso x .mor = id C x
   idIso x .inv = id C x
   idIso x .ret = ⋆IdR C (id C x)
   idIso x .sec = ⋆IdR C (id C x)
 
-  
   invIso : {x y : C .ob} → CatIso {C = C} x y → CatIso {C = C} y x
   invIso f .mor = inv f
   invIso f .inv = mor f

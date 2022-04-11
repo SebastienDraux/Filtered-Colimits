@@ -22,6 +22,9 @@ open Limit
 open NatTrans
 open CatIso
 
+hasLimitShape :  {ℓJ ℓJ' ℓC ℓC' : Level} → (J : Precategory ℓJ ℓJ') → (C : Precategory ℓC ℓC') → Type (ℓ-max (ℓ-max (ℓ-max ℓJ ℓJ') ℓC) ℓC')
+hasLimitShape J C = (F : Functor J C) → Limit F
+
 module _ {J : Precategory ℓJ ℓJ'}
          {C : Precategory ℓC ℓC'}
          {F : Functor J C} where
@@ -113,26 +116,24 @@ module _ {J : Precategory ℓJ ℓJ'}
          (G : Functor C D)
          (L : Limit F)
          (L' : Limit (G ∘F F)) where
-  
+         
+  coneComp : Cone (G ∘F F) (G ⟅ head L ⟆)
+  N-ob coneComp  j = G ⟪ N-ob (cone (islim L)) j ⟫
+  N-hom coneComp {j} {j'} f =
+    id D (G ⟅ head L ⟆) ⋆⟨ D ⟩ G ⟪ N-ob (cone (islim L)) j' ⟫
+        ≡⟨ ⋆IdL D (G ⟪ N-ob (cone (islim L)) j' ⟫) ⟩
+    G ⟪ N-ob (cone (islim L)) j' ⟫
+        ≡⟨ cong (λ f → G ⟪ f ⟫) (sym (⋆IdL C (N-ob (cone (islim L)) j'))) ⟩
+    G ⟪ id C (head L) ⋆⟨ C ⟩  N-ob (cone (islim L)) j' ⟫
+        ≡⟨ cong (λ f → G ⟪ f ⟫) (N-hom (cone (islim L)) f) ⟩
+    G ⟪ (N-ob (cone (islim L)) j) ⋆⟨ C ⟩  F ⟪ f ⟫ ⟫
+        ≡⟨ F-seq G (N-ob (cone (islim L)) j) (F ⟪ f ⟫) ⟩
+    G ⟪ N-ob (cone (islim L)) j ⟫ ⋆⟨ D ⟩ (G ⟪ F ⟪ f ⟫ ⟫) ∎
+    
   canonicalMapComp : D [ G ⟅ head L ⟆ , head L' ]
-  canonicalMapComp = canonicalFact L' c
-    where
-    c : Cone (G ∘F F) (G ⟅ head L ⟆)
-    N-ob c  j = G ⟪ N-ob (cone (islim L)) j ⟫
-    N-hom c {j} {j'} f =
-      id D (G ⟅ head L ⟆) ⋆⟨ D ⟩ G ⟪ N-ob (cone (islim L)) j' ⟫
-          ≡⟨ ⋆IdL D (G ⟪ N-ob (cone (islim L)) j' ⟫) ⟩
-      G ⟪ N-ob (cone (islim L)) j' ⟫
-          ≡⟨ cong (λ f → G ⟪ f ⟫) (sym (⋆IdL C (N-ob (cone (islim L)) j'))) ⟩
-      G ⟪ id C (head L) ⋆⟨ C ⟩  N-ob (cone (islim L)) j' ⟫
-          ≡⟨ cong (λ f → G ⟪ f ⟫) (N-hom (cone (islim L)) f) ⟩
-      G ⟪ (N-ob (cone (islim L)) j) ⋆⟨ C ⟩  F ⟪ f ⟫ ⟫
-          ≡⟨ F-seq G (N-ob (cone (islim L)) j) (F ⟪ f ⟫) ⟩
-      G ⟪ N-ob (cone (islim L)) j ⟫ ⋆⟨ D ⟩ (G ⟪ F ⟪ f ⟫ ⟫) ∎
+  canonicalMapComp = canonicalFact L' coneComp
 
-  open CatIso
-
-  preservesLimit : Type ℓD'
-  preservesLimit = isIso {C = D} canonicalMapComp 
+  preservLimit : Type ℓD'
+  preservLimit = isIso {C = D} canonicalMapComp 
 
   
