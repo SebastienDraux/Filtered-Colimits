@@ -1,3 +1,7 @@
 *.agdai
 *.agda~
+*.pdf
+*.aux
+*.log
+*.gz
 MAlonzo/**

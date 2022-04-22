@@ -8,6 +8,7 @@ open import Cubical.Categories.Functor
 open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.Limits.Base
 open import Cubical.Categories.Morphism
+open import Cubical.Categories.Instances.Functors
 
 open import Cubical.Data.Sigma
 
@@ -18,7 +19,6 @@ open import Colimits
 open import Lemma
 open import Functors
 open import NatTransfo
-open import functorCategories
 
 private
   variable
@@ -37,19 +37,19 @@ module _ {J : Precategory ℓJ ℓJ'}
          {D : Precategory ℓD ℓD'}
          ⦃ isCatD : isCategory D ⦄
          (lim : hasLimitShape J D)
-         (F : Functor J (functorCat C D)) where
+         (F : Functor J (FUNCTOR C D)) where
 
-  L : (x : C .ob) → Limit ((eval C D x) ∘F F)
-  L x = lim ((eval C D x) ∘F F)
+  L : (x : C .ob) → Limit ((eval x) ∘F F)
+  L x = lim ((eval x) ∘F F)
 
-  cx : {H : Functor C D} → (β : Cone F H) → (x : C .ob) → Cone (eval C D x ∘F F) (H ⟅ x ⟆)
+  cx : {H : Functor C D} → (β : Cone F H) → (x : C .ob) → Cone (eval x ∘F F) (H ⟅ x ⟆)
   cx {H} β x .N-ob j = β ⟦ j ⟧ ⟦ x ⟧
   cx {H} β x .N-hom {j} {j'} f = cong (λ ν → ν ⟦ x ⟧) (N-hom β f)
 
   creatFuncLim : Limit F
   creatFuncLim = Lim      
    where
-     c : {x y : C .ob} → (f : C [ x , y ]) → Cone ((eval C D y) ∘F F) (head (L x))
+     c : {x y : C .ob} → (f : C [ x , y ]) → Cone ((eval y) ∘F F) (head (L x))
      c {x} {y} f .N-ob j = proj (L x) j ⋆⟨ D ⟩ (F ⟅ j ⟆ ⟪ f ⟫)
      c {x} {y} f .N-hom {j} {j'} g = 
        D .id (head (L x)) ⋆⟨ D ⟩ (proj (L x) j' ⋆⟨ D ⟩ F ⟅ j' ⟆ ⟪ f ⟫)
@@ -111,7 +111,7 @@ module _ {J : Precategory ℓJ ℓJ'}
      Lim : Limit F
      Lim .head = G
      Lim .islim .cone = natTrans α isNatα
-     Lim .islim .up {H} β = (γ , αfactβ) , λ {(δ , αfactβ') → makeFactPath J (functorCat C D) ⦃ isCatFunct C D ⦄ { H } { G } { F } β (Lim .islim .cone) (γ , αfactβ) (δ , αfactβ') (γ≡δ αfactβ')}
+     Lim .islim .up {H} β = (γ , αfactβ) , λ {(δ , αfactβ') → makeFactPath {x = H} {y = G} {F = F} β (Lim .islim .cone) (γ , αfactβ) (δ , αfactβ') (γ≡δ αfactβ')}
        where
        
        γ : NatTrans H G
@@ -140,41 +140,41 @@ module _ {J : Precategory ℓJ ℓJ'}
        factβ j x = sym (defCanonicalFact (L x) (cx β x))
 
        αfactβ : β ≡ (γ ◼ natTrans α isNatα)
-       αfactβ = makeNatTransPath ⦃ isCatFunct C D ⦄ (funExt λ j → makeNatTransPath (funExt (λ x → factβ j x)))
+       αfactβ = makeNatTransPath (funExt λ j → makeNatTransPath (funExt (λ x → factβ j x)))
 
 
        γ≡δ : {δ :  NatTrans H G} → β ≡ (δ ◼ natTrans α isNatα) → γ ≡ δ
        γ≡δ {δ} αfactβ' = makeNatTransPath (funExt (λ x → sym (carCanFact (L x) (cx β x) (δ ⟦ x ⟧) (λ j → (sym (cong (λ μ → μ ⟦ j ⟧ ⟦ x ⟧) αfactβ'))))))
 
-  evalPreservLim : {x : C .ob} → (L' : Limit F) → (l : Limit ((eval C D x) ∘F F)) → preservLimit F (eval C D x) L' l
-  evalPreservLim {x} L' l = makeIso isom (canonicalMapComp F (eval C D x) L' l) mor≡
+  evalPreservLim : {x : C .ob} → (L' : Limit F) → (l : Limit ((eval x) ∘F F)) → preservLimit F (eval x) L' l
+  evalPreservLim {x} L' l = makeIso isom (canonicalMapComp F (eval x) L' l) mor≡
     where
-    isom : CatIso {C = D} (eval C D x ⟅ head L' ⟆) (head l)
-    isom = eval C D x ⦅ unicityLim ⦃ isCatFunct C D ⦄ L' creatFuncLim ⦆ ⋆ᵢ⟨ D ⟩ unicityLim (L x) l
+    isom : CatIso {C = D} (eval x ⟅ head L' ⟆) (head l)
+    isom = eval x ⦅ unicityLim L' creatFuncLim ⦆ ⋆ᵢ⟨ D ⟩ unicityLim (L x) l
 
-    p : (j : J .ob) → mor isom ⋆⟨ D ⟩ proj l j ≡ eval C D x ⟪ proj L' j ⟫
+    p : (j : J .ob) → mor isom ⋆⟨ D ⟩ proj l j ≡ eval x ⟪ proj L' j ⟫
     p j = 
       mor isom ⋆⟨ D ⟩ proj l j
           ≡⟨ refl ⟩
       (canonicalFact creatFuncLim (cone (islim L')) ⟦ x ⟧ ⋆⟨ D ⟩ canonicalFact l (cone (islim (L x)))) ⋆⟨ D ⟩ proj l j
           ≡⟨ ⋆Assoc D (canonicalFact creatFuncLim (cone (islim L')) ⟦ x ⟧) (canonicalFact l (cone (islim (L x)))) (proj l j) ⟩
       canonicalFact creatFuncLim (cone (islim L')) ⟦ x ⟧ ⋆⟨ D ⟩ (canonicalFact l (cone (islim (L x))) ⋆⟨ D ⟩ proj l j)
-          ≡⟨ cong (λ f →  eval C D x ⟪ canonicalFact creatFuncLim (cone (islim L')) ⟫ ⋆⟨ D ⟩ f) (defCanonicalFact l (cone (islim (L x)))) ⟩
+          ≡⟨ cong (λ f →  eval x ⟪ canonicalFact creatFuncLim (cone (islim L')) ⟫ ⋆⟨ D ⟩ f) (defCanonicalFact l (cone (islim (L x)))) ⟩
       canonicalFact creatFuncLim (cone (islim L')) ⟦ x ⟧ ⋆⟨ D ⟩ proj (L x) j
           ≡⟨ refl ⟩
       canonicalFact (L x) (cx (cone (islim L')) x) ⋆⟨ D ⟩ proj (L x) j
           ≡⟨ defCanonicalFact (L x) (cx (cone (islim L')) x) ⟩  
       proj L' j ⟦ x ⟧ ∎
 
-    mor≡ : mor isom ≡ canonicalMapComp F (eval C D x) L' l
-    mor≡ = carCanFact l (coneComp F (eval C D x) L' l) (mor isom) p
+    mor≡ : mor isom ≡ canonicalMapComp F (eval x) L' l
+    mor≡ = carCanFact l (coneComp F (eval x) L' l) (mor isom) p
     
 module _ {J : Precategory ℓJ ℓJ'}
          {D : Precategory ℓD ℓD'}
          ⦃ isCatD : isCategory D ⦄
          (lim : hasLimitShape J D) where
          
-  functLim : Functor (functorCat J D) D
+  functLim : Functor (FUNCTOR J D) D
   functLim = LimF
     where
     c : {F G : Functor J D} → (α : NatTrans F G) → Cone G (head (lim F))
@@ -194,10 +194,10 @@ module _ {J : Precategory ℓJ ℓJ'}
          ≡⟨ sym (⋆Assoc D (proj (lim F) j) (α ⟦ j ⟧) (G ⟪ f ⟫)) ⟩
       (proj (lim F) j ⋆⟨ D ⟩ α ⟦ j ⟧) ⋆⟨ D ⟩ G ⟪ f ⟫ ∎
 
-    LimF : Functor (functorCat J D) D
+    LimF : Functor (FUNCTOR J D) D
     LimF .F-ob F = head (lim F)
     LimF .F-hom {F} {G} α = canonicalFact (lim G) (c α)
-    LimF .F-id {F} = sym (carCanFact (lim F) (c (id (functorCat J D) F)) (id D (head (lim F))) p)
+    LimF .F-id {F} = sym (carCanFact (lim F) (c (id (FUNCTOR J D) F)) (id D (head (lim F))) p)
       where
       p : (j : J .ob) → id D (head (lim F)) ⋆⟨ D ⟩ proj (lim F) j ≡ proj (lim F) j ⋆⟨ D ⟩ id D (F ⟅ j ⟆)
       p j = 
@@ -230,13 +230,13 @@ module _ {J : Precategory ℓJ ℓJ'}
          ⦃ isCatD : isCategory D ⦄
          (colim : hasColimitShape J D) where
 
-  functColim : Functor (functorCat J D) D
+  functColim : Functor (FUNCTOR J D) D
   functColim  = Colim
     where
-    c : Functor (functorCat (J ^op) (D ^op) ⦃ isCatOp D isCatD ⦄ ) (D ^op)
-    c = functLim ⦃ isCatOp D isCatD ⦄ λ G → elim-^opF G Limit (colim (G ^opF))
+    c : Functor (FUNCTOR (J ^op) (D ^op) ⦃ isCat^op D ⦄ ) (D ^op)
+    c = functLim ⦃ isCat^op D ⦄ λ G → elim-^opF G Limit (colim (G ^opF))
 
-    Colim : Functor (functorCat J D) D
+    Colim : Functor (FUNCTOR J D) D
     Colim .F-ob F = c ⟅ F ^opF ⟆
     Colim .F-hom {F} {G} α = c ⟪ α ^opN ⟫
     Colim .F-id {F} = cong (F-hom c) ^opN-id ∙ F-id c
@@ -246,30 +246,30 @@ module _ {J : Precategory ℓJ ℓJ'}
   isColimFunctColim F = transport (cong (λ x → isLimit (F ^opF) x) ((cong (λ G → head (colim G)) (sym (^opF-invol F))) ∙ sym (transportRefl (head (colim (F ^opF ^opF)))))) (islim (colim F))
 
   module _ {C : Precategory ℓC ℓC'}
-           (F : Functor J (functorCat C D)) where
+           (F : Functor J (FUNCTOR C D)) where
  
     creatFuncColim : Colimit F
     creatFuncColim = Colim
       where
-      op : (Functor J (functorCat C D)) →  Functor (J ^op) (functorCat (C ^op) (D ^op) ⦃ isCatOp D isCatD ⦄)
+      op : (Functor J (FUNCTOR C D)) →  Functor (J ^op) (FUNCTOR (C ^op) (D ^op) ⦃ isCat^op D ⦄)
       op G .F-ob j = (G ⟅ j ⟆) ^opF
       op G .F-hom {j'} {j} f = G ⟪ f ⟫ ^opN 
       op G .F-id {j} = cong (λ α → α ^opN) (F-id G) ∙ ^opN-id
       op G .F-seq f g = cong (λ α → α ^opN) (F-seq G g f) ∙ ^opN-seq (G ⟪ g ⟫) (G ⟪ f ⟫)
 
-      l : (G : Functor J (functorCat C D)) → Limit (op G)
-      l G = creatFuncLim ⦃ isCatOp D isCatD ⦄ (λ H → elim-^opF H Limit (colim (H ^opF))) (op G)
+      l : (G : Functor J (FUNCTOR C D)) → Limit (op G)
+      l G = creatFuncLim ⦃ isCat^op D ⦄ (λ H → elim-^opF H Limit (colim (H ^opF))) (op G)
 
       lF = l F
 
       Colim : Colimit F 
       Colim .head = head lF ^opF
-      Colim .islim .cone .N-ob j = elim-^opF (F ⟅ j ⟆) (λ G → functorCat C D [ G , head lF ^opF ]) (proj lF j ^opN)
+      Colim .islim .cone .N-ob j = elim-^opF (F ⟅ j ⟆) (λ G → FUNCTOR C D [ G , head lF ^opF ]) (proj lF j ^opN)
       Colim .islim .cone .N-hom {j'} {j} f = {!!}
         where
-        p : elim-^opF (F ⟅ j ⟆) (λ G → functorCat C D [ G , head lF ^opF ]) (proj lF j ^opN) ●ᵛ idTrans (head lF ^opF) ≡ F ⟪ f ⟫ ●ᵛ elim-^opF (F ⟅ j' ⟆) (λ G → functorCat C D [ G , head lF ^opF ]) (proj lF j' ^opN)
+        p : elim-^opF (F ⟅ j ⟆) (λ G → FUNCTOR C D [ G , head lF ^opF ]) (proj lF j ^opN) ●ᵛ idTrans (head lF ^opF) ≡ F ⟪ f ⟫ ●ᵛ elim-^opF (F ⟅ j' ⟆) (λ G → FUNCTOR C D [ G , head lF ^opF ]) (proj lF j' ^opN)
         p =
-          elim-^opF (F ⟅ j ⟆) (λ G → functorCat C D [ G , head lF ^opF ]) (proj lF j ^opN) ●ᵛ idTrans (head lF ^opF) ≡⟨ {!!} ⟩
-          F ⟪ f ⟫ ●ᵛ elim-^opF (F ⟅ j' ⟆) (λ G → functorCat C D [ G , head lF ^opF ]) (proj lF j' ^opN) ∎
+          elim-^opF (F ⟅ j ⟆) (λ G → FUNCTOR C D [ G , head lF ^opF ]) (proj lF j ^opN) ●ᵛ idTrans (head lF ^opF) ≡⟨ {!!} ⟩
+          F ⟪ f ⟫ ●ᵛ elim-^opF (F ⟅ j' ⟆) (λ G → FUNCTOR C D [ G , head lF ^opF ]) (proj lF j' ^opN) ∎
         
       Colim .islim .up = {!!}

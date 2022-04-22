@@ -40,7 +40,7 @@ module _ {C : Precategory ℓC ℓC'} where
   idIso : (x : C .ob) → CatIso {C = C} x x
   idIso x .mor = id C x
   idIso x .inv = id C x
-  idIso x .ret = ⋆IdR C (id C x)
+  idIso x .ret = ⋆IdL C (id C x)
   idIso x .sec = ⋆IdR C (id C x)
 
   invIso : {x y : C .ob} → CatIso {C = C} x y → CatIso {C = C} y x
