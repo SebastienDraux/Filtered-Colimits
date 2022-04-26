@@ -22,6 +22,11 @@ subst-subst≡subst2 : {ℓ ℓ' ℓ'' : Level} → {A : Type ℓ} → {B : Type
                      subst (C x) q (subst (λ a → C a y) p c) ≡ subst2 C p q c
 subst-subst≡subst2 {w = w} {x = x} {y = y} {z = z} C p q c = J (λ z q → subst (C x) q (subst (λ a → C a y) p c) ≡ subst2 C p q c) (substRefl {B = C x} (subst (λ a → C a y) p c) ∙ refl) q
 
+subst2Refl : {ℓ ℓ' ℓ'' : Level} → {A : Type ℓ} → {B : Type ℓ'} → {x : A} → {y : B} →
+                     (C : A → B → Type ℓ'') → (c : C x y) → subst2 C refl refl c ≡ c
+                  
+subst2Refl {x = x} {y = y} C c = sym (subst-subst≡subst2 C refl refl c) ∙ substRefl {B = C x} (subst (C x) refl c) ∙ substRefl {B = C x} c
+
 Σ-Set : {ℓ ℓ' : Level} → (A : Type ℓ) → (B : A → Type ℓ') → isSet A → ((a : A) → isSet (B a)) → isSet (Σ A B)
 Σ-Set A B isSetA isSetB (a , b) (a' , b') p q = eq
   where
