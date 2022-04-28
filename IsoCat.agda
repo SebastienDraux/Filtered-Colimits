@@ -23,9 +23,9 @@ module _ {C : Category ℓC ℓC'} where
   open CatIso
   open Functor
 
-  infix 30 _⦅_⦆
-  _⦅_⦆ : {D : Category ℓD ℓD'} → {x y : C .ob} → (F : Functor C D) → (f : CatIso C x y) → CatIso D (F ⟅ x ⟆) (F ⟅ y ⟆)
-  _⦅_⦆ F f = preserveIsosF {F = F} f
+  infix 30 _⟪_⟫ᵢ
+  _⟪_⟫ᵢ : {D : Category ℓD ℓD'} → {x y : C .ob} → (F : Functor C D) → (f : CatIso C x y) → CatIso D (F ⟅ x ⟆) (F ⟅ y ⟆)
+  _⟪_⟫ᵢ F f = preserveIsosF {F = F} f
 
   makeIso : {x y : C .ob} → (f : CatIso C x y) → (g : C [ x , y ]) → mor f ≡ g → isIso C g
   makeIso f g p = record { inv = inv f ; sec = cong (λ h → inv f ⋆⟨ C ⟩ h) (sym p) ∙ sec f ; ret = cong (λ h → h ⋆⟨ C ⟩ inv f) (sym p) ∙ ret f }
@@ -105,14 +105,14 @@ module _ {C : Category ℓC ℓC'}
          {D : Category ℓD ℓD'}
          (F : Functor C D) where
 
-  iso-F-id : {x : C .ob} → F ⦅ idCatIso {x = x} ⦆ ≡ idCatIso
-  iso-F-id {x} = makeIsoPath (F ⦅ idCatIso ⦆) idCatIso (F-id F)
+  iso-F-id : {x : C .ob} → F ⟪ idCatIso {x = x} ⟫ᵢ ≡ idCatIso
+  iso-F-id {x} = makeIsoPath (F ⟪ idCatIso ⟫ᵢ) idCatIso (F-id F)
 
-  iso-F-seq : {x y z : C .ob} → (f : CatIso C x y) → (g : CatIso C y z) → F ⦅ f ⋆ᵢ⟨ C ⟩ g ⦆ ≡ F ⦅ f ⦆ ⋆ᵢ⟨ D ⟩ F ⦅ g ⦆
-  iso-F-seq f g = makeIsoPath (F ⦅ f ⋆ᵢ⟨ C ⟩ g ⦆) (F ⦅ f ⦆ ⋆ᵢ⟨ D ⟩ F ⦅ g ⦆) (F-seq F (mor f) (mor g))
+  iso-F-seq : {x y z : C .ob} → (f : CatIso C x y) → (g : CatIso C y z) → F ⟪ f ⋆ᵢ⟨ C ⟩ g ⟫ᵢ ≡ F ⟪ f ⟫ᵢ ⋆ᵢ⟨ D ⟩ F ⟪ g ⟫ᵢ
+  iso-F-seq f g = makeIsoPath (F ⟪ f ⋆ᵢ⟨ C ⟩ g ⟫ᵢ) (F ⟪ f ⟫ᵢ ⋆ᵢ⟨ D ⟩ F ⟪ g ⟫ᵢ) (F-seq F (mor f) (mor g))
 
-  iso-F-inv : {x y : C .ob} → (f : CatIso C x y) → F ⦅ invIso f ⦆ ≡ invIso (F ⦅ f ⦆)
-  iso-F-inv f = makeIsoPath (F ⦅ invIso f ⦆) (invIso (F ⦅ f ⦆)) refl
+  iso-F-inv : {x y : C .ob} → (f : CatIso C x y) → F ⟪ invIso f ⟫ᵢ ≡ invIso (F ⟪ f ⟫ᵢ)
+  iso-F-inv f = makeIsoPath (F ⟪ invIso f ⟫ᵢ) (invIso (F ⟪ f ⟫ᵢ)) refl
 
 module _ (C : Category ℓC ℓC') where
 

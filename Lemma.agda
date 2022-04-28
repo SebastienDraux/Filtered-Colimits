@@ -1,6 +1,7 @@
 {-# OPTIONS --cubical #-}
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.Isomorphism
 
@@ -27,25 +28,11 @@ subst2Refl : {ℓ ℓ' ℓ'' : Level} → {A : Type ℓ} → {B : Type ℓ'} →
                   
 subst2Refl {x = x} {y = y} C c = sym (subst-subst≡subst2 C refl refl c) ∙ substRefl {B = C x} (subst (C x) refl c) ∙ substRefl {B = C x} c
 
-Σ-Set : {ℓ ℓ' : Level} → (A : Type ℓ) → (B : A → Type ℓ') → isSet A → ((a : A) → isSet (B a)) → isSet (Σ A B)
-Σ-Set A B isSetA isSetB (a , b) (a' , b') p q = eq
-  where
-  p' = PathPΣ p
-  q' = PathPΣ q
-
-  p'≡q' : p' ≡ q'
-  p'≡q' = Σ≡Prop (λ p → isSet→isPropPathP (λ i → B (p i)) (λ i → isSetB (p i)) b b') (isSetA a a' (fst p') (fst q'))
-
-  eq : p ≡ q
-  eq = 
-    p ≡⟨ sym (rightInv ΣPathPIsoPathPΣ p) ⟩
-    ΣPathP (PathPΣ p) ≡⟨ cong (λ p' → ΣPathP p') p'≡q' ⟩
-    ΣPathP (PathPΣ q) ≡⟨ rightInv ΣPathPIsoPathPΣ q ⟩
-    q ∎
-  
-
 subst≡ᵣ : {ℓ : Level} {A : Type ℓ} {x y : A} {a : A} (p : x ≡ y) (q : a ≡ x) → subst (λ x → a ≡ x) p q ≡ q ∙ p
 subst≡ᵣ p q = fromPathP (compPath-filler q p)
 
 subst≡ₗ : {ℓ : Level} {A : Type ℓ} {x y : A} {a : A} (p : x ≡ y) (q : x ≡ a) → subst (λ x → x ≡ a) p q ≡ (sym p) ∙ q
 subst≡ₗ p q = fromPathP (compPath-filler' (sym p) q)
+
+subst-subst : {ℓ ℓ' : Level} → {A : Type ℓ} → (B : A → Type ℓ') → {x y z : A} → (p : x ≡ y) → (q : y ≡ z) → (b : B x) → subst B q (subst B p b) ≡ subst B (p ∙ q) b
+subst-subst B p q b = J (λ z q → subst B q (subst B p b) ≡ subst B (p ∙ q) b) (substRefl {B = B} (subst B p b) ∙ cong (λ p → subst B p b) (rUnit p)) q

@@ -115,14 +115,14 @@ module _ {C : Category ℓC ℓC'}
       
       rem = isProp→PathP (λ k → isSet→isPropPathP (λ j →  F-seq (eqFunct→≡ (≡→eqFunct p) j) f g k ≡ F-seq (p j) f g k) (λ _ → isProp→isSet (isSetHom D _ _)) _ _) _ _
 
+  ≡IsoEqFunct : {F G : Functor C D} → Iso (F ≡ G) (eqFunct F G)
+  ≡IsoEqFunct .fun = ≡→eqFunct
+  ≡IsoEqFunct .inv = eqFunct→≡
+  ≡IsoEqFunct .leftInv = ≡→eqFunct→≡
+  ≡IsoEqFunct .rightInv = eqFunct→≡→eqFunct
+
   ≡≃eqFunct : {F G : Functor C D} → (F ≡ G) ≃ (eqFunct F G)
-  ≡≃eqFunct {F} {G} = isoToEquiv isom
-    where
-    isom : Iso (F ≡ G) (eqFunct F G)
-    isom .fun = ≡→eqFunct
-    isom .inv = eqFunct→≡
-    isom .leftInv = ≡→eqFunct→≡
-    isom .rightInv = eqFunct→≡→eqFunct
+  ≡≃eqFunct {F} {G} = isoToEquiv ≡IsoEqFunct
 
 
   makeFunctPathMorP : (F G : Functor C D) → (p : F ≡ G) → (x : ob C) → morP (FUNCTOR C D) p ⟦ x ⟧ ≡ morP D (eq-ob (≡→eqFunct p) x)
