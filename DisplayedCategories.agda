@@ -170,12 +170,11 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
         dC-sec : subst (λ f → D [ f , X' , X' ]ᴰ) (⋆IdL C (id C)) (dC-inv ⋆⟨ D ⟩ᴰ dC-mor) ≡ dC-id D
         dC-ret : subst (λ f → D [ f , X , X ]ᴰ) (⋆IdR C (id C)) (dC-mor ⋆⟨ D ⟩ᴰ dC-inv) ≡ dC-id D
 
-
-    record dispCatIso' {x : ob C} (f : CatIso C x x) (X X' : D ⦅ x ⦆) : Type ℓD' where --iso over iso?
+    record dispCatIso' {x y : ob C} (f : CatIso C x y) (X : D ⦅ x ⦆) (Y : D ⦅ y ⦆) : Type ℓD' where  --iso over iso
       field
-        dC-mor : D [ mor f , X , X' ]ᴰ
-        dC-inv : D [ inv f , X' , X ]ᴰ
-        dC-sec : subst (λ f → D [ f , X' , X' ]ᴰ) (sec f) (dC-inv ⋆⟨ D ⟩ᴰ dC-mor) ≡ dC-id D
+        dC-mor : D [ mor f , X , Y ]ᴰ
+        dC-inv : D [ inv f , Y , X ]ᴰ
+        dC-sec : subst (λ f → D [ f , Y , Y ]ᴰ) (sec f) (dC-inv ⋆⟨ D ⟩ᴰ dC-mor) ≡ dC-id D
         dC-ret : subst (λ f → D [ f , X , X ]ᴰ) (ret f) (dC-mor ⋆⟨ D ⟩ᴰ dC-inv) ≡ dC-id D
         
     open dispCatIso
@@ -207,7 +206,12 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
     field
       isSetFiber : (x : ob C) → isSet (D ⦅ x ⦆)
       isPropMor : {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → (Y : D ⦅ y ⦆) → isProp (D [ f , X , Y ]ᴰ)
-      morImpl : {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → ∃![ Y ∈ D ⦅ y ⦆ ] (D [ f , X , Y ]ᴰ) --Σ or ∃ (to have a proposition) instead of ∃!
+      --morImpl : {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → ∃![ Y ∈ D ⦅ y ⦆ ] (D [ f , X , Y ]ᴰ)
+      morImpl' : {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → Σ[ Y ∈ D ⦅ y ⦆ ] (D [ f , X , Y ]ᴰ)
+      morImpl'-id : {x : ob C} → (X : D ⦅ x ⦆) → fst (morImpl' (id C) X) ≡ X
+      morImpl'-seq : {x y z : ob C} → (f : C [ x , y ]) → (g : C [ y , z ]) → (X : D ⦅ x ⦆) → fst (morImpl' (f ⋆⟨ C ⟩ g) X) ≡ fst (morImpl' g (fst (morImpl' f X)))
+      test :  {x y : ob C} → (f : C [ x , y ]) → (X X' : D ⦅ x ⦆) → D [ id C , X , X' ]ᴰ → D [ id C , fst (morImpl' f X) , fst (morImpl' f X') ]ᴰ
+      
       isUniv : dC-isUnivalent D
       
   open isDispOverPoset
@@ -215,7 +219,7 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
   isProp-isDispOverPoset : (D : dispCat C ℓD ℓD') → isProp (isDispOverPoset D)
   isProp-isDispOverPoset D overPosetD overPosetD' i .isSetFiber = isPropΠ (λ _ → isPropIsSet) (isSetFiber overPosetD) (isSetFiber overPosetD') i
   isProp-isDispOverPoset D overPosetD overPosetD' i .isPropMor = isPropΠ3 (λ _ _ _ → isPropIsProp) (isPropMor overPosetD) (isPropMor overPosetD') i
-  isProp-isDispOverPoset D overPosetD overPosetD' i .morImpl = isPropΠ2 (λ _ _ → isPropIsContr) (morImpl overPosetD) (morImpl overPosetD') i
+--  isProp-isDispOverPoset D overPosetD overPosetD' i .morImpl = isPropΠ2 (λ _ _ → isPropIsContr) (morImpl overPosetD) (morImpl overPosetD') i
   isProp-isDispOverPoset D overPosetD overPosetD' i .isUniv = isProp-dC-isUnivalent D (isUniv overPosetD) (isUniv overPosetD') i
   
 open isDispOverPoset
@@ -238,49 +242,63 @@ module _ {ℓD ℓD' : Level}
   fromPOSET F .dC-⋆IdL {x} {y} p = is-prop-valued (isPoset (snd (F ⟅ y ⟆))) _ _ _ _
   fromPOSET F .dC-⋆IdR {x} {y} p = is-prop-valued (isPoset (snd (F ⟅ y ⟆))) _ _ _ _
   fromPOSET F .dC-⋆Assoc {z = z} p q r = is-prop-valued (isPoset (snd (F ⟅ z ⟆))) _ _ _ _
+
+  overPoset-fromPOSET' : (F : Functor C (POSET ℓD ℓD')) → isDispOverPoset (fromPOSET F)
+  overPoset-fromPOSET' F .isSetFiber x = is-set (isPoset (snd (F ⟅ x ⟆)))
+  overPoset-fromPOSET' F .isPropMor {x} {y} f a b = is-prop-valued (isPoset (snd (F ⟅ y ⟆))) _ _ 
+  overPoset-fromPOSET' F .morImpl' {x} {y} f a = (F ⟪ f ⟫ ⟅ a ⟆) , is-refl (isPoset (snd (F ⟅ y ⟆))) _
+  overPoset-fromPOSET' F .morImpl'-id {x} a = cong (λ F → F ⟅ a ⟆) (F-id F)
+  overPoset-fromPOSET' F .morImpl'-seq f g a = cong (λ F → F ⟅ a ⟆) (F-seq F _ _)
+  overPoset-fromPOSET' F .test {x} {y} f a a' a≤a' =
+    (F ⟪ id C ⟫) ⟅ F ⟪ f ⟫ ⟅ a ⟆ ⟆     ≤[ F ⟅ y ⟆ ]⟨ ≡→≤ (F ⟅ y ⟆) (cong (λ G → G ⟅ F ⟪ f ⟫ ⟅ a ⟆ ⟆) (F-id F)) ⟩
+    F ⟪ f ⟫ ⟅ a ⟆                      ≤[ F ⟅ y ⟆ ]⟨ ≡→≤ (F ⟅ y ⟆) (cong (λ G →  F ⟪ f ⟫ ⟅ G ⟅ a ⟆ ⟆) (sym (F-id F))) ⟩
+    F ⟪ f ⟫ ⟅ F ⟪ id C ⟫ ⟅ a ⟆ ⟆      ≤[ F ⟅ y ⟆ ]⟨ F ⟪ f ⟫ ⟪ a≤a' ⟫ ⟩
+    F ⟪ f ⟫ ⟅ a' ⟆                      [ F ⟅ y ⟆ ]□
+  overPoset-fromPOSET' F .isUniv .dC-univ {x} a b .equiv-proof f = ({!!} , {!!}) , {!!}
+
+
+--  toPoset : (D : dispCat C ℓD ℓD') → isDispOverPoset D → ob C → Poset ℓD ℓD'
+--  toPoset D overPosetD x = D ⦅ x ⦆ , posetStruct
+--    where
+--    posetStruct : PosetStr ℓD' (D ⦅ x ⦆)
+--    posetStruct ._≤_ a b = D [ id C , a , b ]ᴰ --not sure
+--    posetStruct .isPoset .is-set = isSetFiber overPosetD x
+--    posetStruct .isPoset .is-prop-valued = isPropMor overPosetD (id C)
+--    posetStruct .isPoset .is-refl a = dC-id D
+--    posetStruct .isPoset .is-trans a b c f g = subst (λ f → D [ f , a , c ]ᴰ) (⋆IdL C (id C)) (f ⋆⟨ D ⟩ᴰ g)
+--    posetStruct .isPoset .is-antisym a b f g = equivFun (invEquiv (dC-univEquiv (isUniv overPosetD) a b)) isom
+--      where
+--      isom : dispCatIso D a b
+--      isom .dC-mor = f
+--      isom .dC-inv = g
+--      isom .dC-sec = isPropMor overPosetD (id C) b b _ _
+ --     isom .dC-ret = isPropMor overPosetD (id C) a a _ _
   
-  toPoset : (D : dispCat C ℓD ℓD') → isDispOverPoset D → ob C → Poset ℓD ℓD'
-  toPoset D overPosetD x = D ⦅ x ⦆ , posetStruct
-    where
-    posetStruct : PosetStr ℓD' (D ⦅ x ⦆)
-    posetStruct ._≤_ a b = D [ id C , a , b ]ᴰ --not sure
-    posetStruct .isPoset .is-set = isSetFiber overPosetD x
-    posetStruct .isPoset .is-prop-valued = isPropMor overPosetD (id C)
-    posetStruct .isPoset .is-refl a = dC-id D
-    posetStruct .isPoset .is-trans a b c f g = subst (λ f → D [ f , a , c ]ᴰ) (⋆IdL C (id C)) (f ⋆⟨ D ⟩ᴰ g)
-    posetStruct .isPoset .is-antisym a b f g = equivFun (invEquiv (dC-univEquiv (isUniv overPosetD) a b)) isom
-      where
-      isom : dispCatIso D a b
-      isom .dC-mor = f
-      isom .dC-inv = g
-      isom .dC-sec = isPropMor overPosetD (id C) b b _ _
-      isom .dC-ret = isPropMor overPosetD (id C) a a _ _
-  
-  toPOSET : (D : dispCat C ℓD ℓD') → isDispOverPoset D → Functor C (POSET ℓD ℓD')
-  toPOSET D overPosetD = F
-    where
-    toPoset' : (x : ob C) → Poset ℓD ℓD'
-    toPoset' x = toPoset D overPosetD x
+--  toPOSET : (D : dispCat C ℓD ℓD') → isDispOverPoset D → Functor C (POSET ℓD ℓD')
+--  toPOSET D overPosetD = F
+--    where
+--    toPoset' : (x : ob C) → Poset ℓD ℓD'
+--    toPoset' x = toPoset D overPosetD x
     
-    G : {x y : ob C} → (f : C [ x , y ]) → Functor (PosetCategory (toPoset' x)) (PosetCategory (toPoset' y))
-    G {x} {y} f .F-ob a = fst (fst (morImpl overPosetD f a))
-    G {x} {y} f .F-hom {a} {b} a≤b = {!!}
-    G {x} {y} f .F-id = is-prop-valued (isPoset (snd (toPoset' y))) _ _ _ _
-    G {x} {y} f .F-seq a≤b b≤c = is-prop-valued (snd (toPoset' y)) _ _ _ _
+--    G : {x y : ob C} → (f : C [ x , y ]) → Functor (PosetCategory (toPoset' x)) (PosetCategory (toPoset' y))
+--    G {x} {y} f .F-ob a = fst (fst (morImpl overPosetD f a))
+--    G {x} {y} f .F-hom {a} {b} a≤b = {!!}
+--    G {x} {y} f .F-id = is-prop-valued (isPoset (snd (toPoset' y))) _ _ _ _
+--    G {x} {y} f .F-seq a≤b b≤c = is-prop-valued (snd (toPoset' y)) _ _ _ _
     
-    F : Functor C (POSET ℓD ℓD')
-    F .F-ob x = toPoset' x
-    F .F-hom f = G f
-    F .F-id {x} = eqFunct→≡ eqG-id
-      where
-      eqG-id : eqFunct (G (id C {x})) 𝟙⟨ PosetCategory (toPoset' x) ⟩
-      eqG-id .eq-ob a = cong fst (snd (morImpl overPosetD (id C) a) (a , (dC-id D)))
-      eqG-id .eq-hom a≤b = is-prop-valued (isPoset (snd (toPoset' x))) _ _ _ _
-    F .F-seq {x} {y} {z} f g = eqFunct→≡ eqG-seq
-      where
-      eqG-seq : eqFunct (G (f ⋆⟨ C ⟩ g)) (G f ⋆ᶠ G g)
-      eqG-seq .eq-ob a = cong fst (snd (morImpl overPosetD (f ⋆⟨ C ⟩ g) a) (_ , snd (fst (morImpl overPosetD f a)) ⋆⟨ D ⟩ᴰ snd (fst (morImpl overPosetD g _))))
-      eqG-seq .eq-hom a≤b = is-prop-valued (isPoset (snd (toPoset' z))) _ _ _ _
+--    F : Functor C (POSET ℓD ℓD')
+--    F .F-ob x = toPoset' x
+--    F .F-hom f = G f
+--    F .F-id {x} = eqFunct→≡ eqG-id
+--      where
+--      eqG-id : eqFunct (G (id C {x})) 𝟙⟨ PosetCategory (toPoset' x) ⟩
+--      eqG-id .eq-ob a = cong fst (snd (morImpl overPosetD (id C) a) (a , (dC-id D)))
+--      eqG-id .eq-hom a≤b = is-prop-valued (isPoset (snd (toPoset' x))) _ _ _ _
+--    F .F-seq {x} {y} {z} f g = eqFunct→≡ eqG-seq
+--      where
+--      eqG-seq : eqFunct (G (f ⋆⟨ C ⟩ g)) (G f ⋆ᶠ G g)
+--      eqG-seq .eq-ob a = cong fst (snd (morImpl overPosetD (f ⋆⟨ C ⟩ g) a) (_ , snd (fst (morImpl overPosetD f a)) ⋆⟨ D ⟩ᴰ snd (fst (morImpl overPosetD g _))))
+--      eqG-seq .eq-hom a≤b = is-prop-valued (isPoset (snd (toPoset' z))) _ _ _ _
 
 --  fromPOSET' : Functor C (POSET' ℓD ℓD') → dispCat C ℓD ℓD'
 --  fromPOSET' F .dC-ob x = fst (F ⟅ x ⟆)
@@ -289,7 +307,7 @@ module _ {ℓD ℓD' : Level}
 --  fromPOSET' F .dC-id {x} {a} = subst (λ b → _≤_ (snd (F ⟅ x ⟆)) b a) (funExt⁻ (sym (F-id F)) a) (is-refl (isPoset (snd (F ⟅ x ⟆))) a)
 --  fromPOSET' F .dC-⋆ {x} {y} {z} {a} {b} {c} {f} {g} p q =
 --    (F ⟪ f ⋆⟨ C ⟩ g ⟫) a       ≤[ F ⟅ z ⟆ ]⟨ ≡→≤ (F ⟅ z ⟆) (funExt⁻ (F-seq F _ _) a) ⟩
---    (F ⟪ g ⟫) ((F ⟪ f ⟫) a)    ≤[ F ⟅ z ⟆ ]⟨ {!!} ⟩
+--    (F ⟪ g ⟫) ((F ⟪ f ⟫) a)    ≤[ F ⟅ z ⟆ ]⟨ {!!} ⟩ --need F ⟪ g ⟫ to respect ≤
 --    (F ⟪ g ⟫) b                ≤[ F ⟅ z ⟆ ]⟨ q ⟩ 
 --    c [ F ⟅ z ⟆ ]□
   --fromPOSET' F .dC-⋆IdL {x} {y} p = snd (F ⟅ y ⟆) .isPoset .is-set _ _ _ _
@@ -302,11 +320,3 @@ module _ {ℓD ℓD' : Level}
 --  toPOSET' D overPosetD .F-id = funExt (λ a → cong fst (snd (morImpl overPosetD (id C) a) (a , (dC-id D))))
 --  toPOSET' D overPosetD .F-seq f g = funExt (λ a → cong fst (snd (morImpl overPosetD (f ⋆⟨ C ⟩ g) a) (_ , snd (fst (morImpl overPosetD f a)) ⋆⟨ D ⟩ᴰ snd (fst (morImpl overPosetD g _)))))
 
-  overPoset-fromPOSET' : (F : Functor C (POSET ℓD ℓD')) → isDispOverPoset (fromPOSET F)
-  overPoset-fromPOSET' F .isSetFiber x = is-set (isPoset (snd (F ⟅ x ⟆)))
-  overPoset-fromPOSET' F .isPropMor f a b = {!!} --is-prop-valued (isPoset {!!}) a {!!} --Only id ?
-  overPoset-fromPOSET' F .morImpl {x} {y} f a = ((F ⟪ f ⟫ ⟅ a ⟆) , is-refl (isPoset (snd (F ⟅ y ⟆))) _) , λ {(b , p) → Σ≡Prop {!!} {!!}} --can't prove unicity
---  overPoset-fromPOSET' F .isUniv .dC-univ {x} a b .equiv-proof f = ({!!} , {!!}) , {!!}
---    where
-   -- a≡b : a ≡ b
-    --a≡b = sym (funExt⁻ (F-id F) a) ∙ dC-mor f
