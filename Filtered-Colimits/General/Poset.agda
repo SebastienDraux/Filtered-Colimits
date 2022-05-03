@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical #-}
+module Filtered-Colimits.General.Poset where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Relation.Binary.Poset

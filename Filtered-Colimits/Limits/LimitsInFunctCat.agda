@@ -1,5 +1,4 @@
-{-# OPTIONS --cubical #-}
-
+module Filtered-Colimits.Limits.LimitsInFunctCat where
 
 open import Cubical.Foundations.Prelude
 
@@ -12,12 +11,13 @@ open import Cubical.Categories.Instances.Functors
 
 open import Cubical.Data.Sigma
 
-open import IsoCat
-open import Limits
-open import Colimits
-open import Lemma
-open import Functors
-open import NatTransfo
+open import Filtered-Colimits.General.Lemma
+open import Filtered-Colimits.Category.IsoCat
+open import Filtered-Colimits.Category.Functors
+open import Filtered-Colimits.Category.NatTransfo
+open import Filtered-Colimits.Limits.Limits
+open import Filtered-Colimits.Limits.Colimits
+
 
 private
   variable

@@ -1,5 +1,4 @@
-{-# OPTIONS --cubical #-}
-
+module Filtered-Colimits.Limits.Colimits where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
@@ -17,7 +16,7 @@ open import Cubical.Data.Empty
 open import Cubical.Data.Sum
 open import Cubical.Data.Sigma
 
-open import Limits
+open import Filtered-Colimits.Limits.Limits
 
 open Category
 open Iso

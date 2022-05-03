@@ -1,5 +1,4 @@
-{-# OPTIONS --cubical #-}
-
+module Filtered-Colimits.Category.2-Cat where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Categories.Category
@@ -10,8 +9,8 @@ open import Cubical.Categories.NaturalTransformation
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.GroupoidLaws
 
-open import IsoCat
-open import Functors
+open import Filtered-Colimits.Category.IsoCat
+open import Filtered-Colimits.Category.Functors
 
 private
   variable
@@ -21,6 +20,8 @@ open Category
 open Functor
 open NatTrans
 --open CatIso
+
+-- Obsolete file
 
 record 2-Category ℓ ℓ' ℓ'' : Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ') ℓ'')) where
   field

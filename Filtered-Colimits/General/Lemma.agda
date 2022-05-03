@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical #-}
+module Filtered-Colimits.General.Lemma where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.GroupoidLaws
@@ -36,3 +36,7 @@ subst≡ₗ p q = fromPathP (compPath-filler' (sym p) q)
 
 subst-subst : {ℓ ℓ' : Level} → {A : Type ℓ} → (B : A → Type ℓ') → {x y z : A} → (p : x ≡ y) → (q : y ≡ z) → (b : B x) → subst B q (subst B p b) ≡ subst B (p ∙ q) b
 subst-subst B p q b = J (λ z q → subst B q (subst B p b) ≡ subst B (p ∙ q) b) (substRefl {B = B} (subst B p b) ∙ cong (λ p → subst B p b) (rUnit p)) q
+
+
+congSubst : {ℓ ℓ' ℓ'' : Level} → {A : Type ℓ} → (B : A → Type ℓ') → (C : A → Type ℓ'') → {x y : A} → (p : x ≡ y) → (f : {a : A} → B a → C a) → (b : B x) → f (subst B p b) ≡ subst C p (f b)
+congSubst B C {x} {y} p f b = J (λ y p → f (subst B p b) ≡ subst C p (f b)) (cong f (substRefl {B = B} b) ∙ sym (substRefl {B = C} (f b))) p

@@ -1,0 +1,4 @@
+name: filtered-colimits
+include: . /home/seb/cubical/cubical.agda-lib
+depend: cubical-0.4
+flags: --cubical

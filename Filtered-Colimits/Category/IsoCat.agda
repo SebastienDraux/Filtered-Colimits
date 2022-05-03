@@ -1,13 +1,16 @@
-{-# OPTIONS --cubical #-}
-
+module Filtered-Colimits.Category.IsoCat where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.Equiv
+
 open import Cubical.Categories.Category
 open import Cubical.Categories.Functor
 open import Cubical.Categories.Morphism
-open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Categories.Instances.Functors
+open import Cubical.Categories.NaturalTransformation
 
-open import Lemma
+open import Filtered-Colimits.General.Lemma
 
 private
   variable
@@ -16,6 +19,7 @@ private
 open Category
 open CatIso
 open Functor
+open isUnivalent
 
 module _ {C : Category ℓC ℓC'} where
 
@@ -134,9 +138,9 @@ module _ (C : Category ℓC ℓC') where
     eqRefl : subst (λ x → C [ x , y ]) refl f ≡ inv (subst (λ x → CatIso C x x) refl idCatIso) ⋆⟨ C ⟩ f
     eqRefl = 
       subst (λ x → C [ x , y ]) refl f ≡⟨ substRefl {B = λ x → C [ x , y ]} f ⟩
-      f ≡⟨ sym (⋆IdL C f) ⟩
-      id C ⋆⟨ C ⟩ f ≡⟨ cong (λ isom →  inv isom ⋆⟨ C ⟩ f) (sym (substRefl {B = λ x → CatIso C x x} idCatIso)) ⟩
-      inv (subst (λ x → CatIso C x x) refl idCatIso) ⋆⟨ C ⟩ f ∎
+      f                                                         ≡⟨ sym (⋆IdL C f) ⟩
+      id C ⋆⟨ C ⟩ f                                             ≡⟨ cong (λ isom →  inv isom ⋆⟨ C ⟩ f) (sym (substRefl {B = λ x → CatIso C x x} idCatIso)) ⟩
+      inv (subst (λ x → CatIso C x x) refl idCatIso) ⋆⟨ C ⟩ f  ∎
 
   substHomR : {x y y' : ob C} → (p : y ≡ y') → (f : C [ x , y ]) → subst (λ y → C [ x , y ]) p f ≡ f ⋆⟨ C ⟩ morP p
   substHomR {x} {y} {y'} p f = J (λ y' p → subst (λ y → C [ x , y ]) p f ≡ f ⋆⟨ C ⟩ morP p) eqRefl p
@@ -144,19 +148,16 @@ module _ (C : Category ℓC ℓC') where
     eqRefl : subst (λ y → C [ x , y ]) refl f ≡ f ⋆⟨ C ⟩ mor (subst (λ y → CatIso C y y) refl idCatIso)
     eqRefl = 
      subst (λ y → C [ x , y ]) refl f ≡⟨ substRefl {B = λ y → C [ x , y ]} f ⟩
-      f ≡⟨ sym (⋆IdR C f) ⟩
-      f ⋆⟨ C ⟩ id C ≡⟨ cong (λ isom →  f ⋆⟨ C ⟩ mor isom) (sym (substRefl {B = λ y → CatIso C y y} idCatIso)) ⟩
-      f ⋆⟨ C ⟩ mor (subst (λ y → CatIso C y y) refl idCatIso) ∎
+      f                                                         ≡⟨ sym (⋆IdR C f) ⟩
+      f ⋆⟨ C ⟩ id C                                             ≡⟨ cong (λ isom →  f ⋆⟨ C ⟩ mor isom) (sym (substRefl {B = λ y → CatIso C y y} idCatIso)) ⟩
+      f ⋆⟨ C ⟩ mor (subst (λ y → CatIso C y y) refl idCatIso)  ∎
 
   substHomLR : {x x' y y' : ob C} → (p : x ≡ x') → (q : y ≡ y') → (f : C [ x , y ]) → invP p ⋆⟨ C ⟩ f ⋆⟨ C ⟩ morP q ≡ subst2 (λ x' y' → C [ x' , y' ]) p q f
   substHomLR {x} {x'} {y} {y'} p q f = 
-    invP p ⋆⟨ C ⟩ f ⋆⟨ C ⟩ morP q
-        ≡⟨ sym (substHomR q (invP p ⋆⟨ C ⟩ f)) ⟩
-    subst (λ y' → C [ x' , y' ]) q (invP p ⋆⟨ C ⟩ f)
-        ≡⟨ cong (λ f → subst (λ y' → C [ x' , y' ]) q f) (sym (substHomL p f)) ⟩
-    subst (λ y' → C [ x' , y' ]) q (subst (λ x' → C [ x' , y ]) p f)
-        ≡⟨ subst-subst≡subst2 (λ x' y' → C [ x' , y' ]) p q f ⟩
-    subst2 (λ x' y' → C [ x' , y' ]) p q f ∎  
+    invP p ⋆⟨ C ⟩ f ⋆⟨ C ⟩ morP q                                        ≡⟨ sym (substHomR q (invP p ⋆⟨ C ⟩ f)) ⟩
+    subst (λ y' → C [ x' , y' ]) q (invP p ⋆⟨ C ⟩ f)                    ≡⟨ cong (λ f → subst (λ y' → C [ x' , y' ]) q f) (sym (substHomL p f)) ⟩
+    subst (λ y' → C [ x' , y' ]) q (subst (λ x' → C [ x' , y ]) p f)   ≡⟨ subst-subst≡subst2 (λ x' y' → C [ x' , y' ]) p q f ⟩
+    subst2 (λ x' y' → C [ x' , y' ]) p q f                               ∎  
       
 
   idPPathToIso : {x y : ob C} → (p : x ≡ y) → idP {C = C} ≡ morP p
@@ -173,8 +174,8 @@ module _ (C : Category ℓC ℓC') where
     where
     eqRefl : morP refl ≡ invP refl
     eqRefl = 
-      morP refl ≡⟨ reflMorP ⟩
-      id C ≡⟨ sym reflInvP ⟩
+      morP refl    ≡⟨ reflMorP ⟩
+      id C         ≡⟨ sym reflInvP ⟩
       invP refl ∎
 
   symPathToIso : {x y : ob C} → (p : x ≡ y) → pathToIso {C = C} (sym p) ≡ invIso (pathToIso {C = C} p)
@@ -185,7 +186,29 @@ module _ (C : Category ℓC ℓC') where
     where
     eqRefl : pathToIso (p ∙ refl) ≡ pathToIso p ⋆ᵢ⟨ C ⟩ pathToIso refl
     eqRefl = 
-      pathToIso (p ∙ refl) ≡⟨ cong (λ p → pathToIso p) (sym (rUnit p)) ⟩
-      pathToIso p ≡⟨ sym (⋆ᵢIdR (pathToIso p)) ⟩
-      pathToIso p ⋆ᵢ⟨ C ⟩ idCatIso ≡⟨ cong (λ isom → pathToIso p ⋆ᵢ⟨ C ⟩ isom) (sym pathToIso-refl) ⟩
-      pathToIso p ⋆ᵢ⟨ C ⟩ pathToIso refl ∎
+      pathToIso (p ∙ refl)                  ≡⟨ cong (λ p → pathToIso p) (sym (rUnit p)) ⟩
+      pathToIso p                           ≡⟨ sym (⋆ᵢIdR (pathToIso p)) ⟩
+      pathToIso p ⋆ᵢ⟨ C ⟩ idCatIso          ≡⟨ cong (λ isom → pathToIso p ⋆ᵢ⟨ C ⟩ isom) (sym pathToIso-refl) ⟩
+      pathToIso p ⋆ᵢ⟨ C ⟩ pathToIso refl    ∎
+
+  injMorP : {x y : ob C} → isUnivalent C → (p q : x ≡ y) → morP p ≡ morP q → p ≡ q
+  injMorP {x} {y} isUnivC p q mor≡ = 
+    p                                              ≡⟨ sym (retEq equiv p) ⟩
+    equivFun (invEquiv equiv) (equivFun equiv p)   ≡⟨ cong (λ f → equivFun (invEquiv equiv) f) (makeIsoPath (equivFun equiv p) (equivFun equiv q) mor≡) ⟩
+    equivFun (invEquiv equiv) (equivFun equiv q)   ≡⟨ retEq equiv q ⟩
+    q ∎
+    where
+    equiv = univEquiv isUnivC x y
+
+
+morPFunct : {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} {F G : Functor C D} → (F≡G : F ≡ G)  → (x : ob C) → morP (FUNCTOR C D) F≡G ⟦ x ⟧ ≡ morP D (cong (λ F → F ⟅ x ⟆) F≡G)
+morPFunct {C = C} {D} {F} {G} F≡G x = J (λ G F≡G → morP (FUNCTOR C D) F≡G ⟦ x ⟧ ≡ morP D (cong (λ F → F ⟅ x ⟆) F≡G)) eqRefl F≡G
+  where
+  eqRefl :  morP (FUNCTOR C D) (refl {x = F}) ⟦ x ⟧ ≡ morP D refl
+  eqRefl = 
+    morP (FUNCTOR C D) (refl {x = F}) ⟦ x ⟧    ≡⟨ cong (λ (α : NatTrans F F) → α ⟦ x ⟧) (reflMorP (FUNCTOR C D)) ⟩
+    id D                                       ≡⟨ sym (reflMorP D) ⟩
+    morP D refl                                ∎
+
+
+      

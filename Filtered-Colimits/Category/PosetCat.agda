@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical #-}
+module Filtered-Colimits.Category.PosetCat where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
@@ -13,9 +13,9 @@ open import Cubical.Categories.Instances.Poset
 
 open import Cubical.Data.Sigma
 
-open import Functors
-open import Lemma
-open import IsoCat
+open import Filtered-Colimits.General.Lemma
+open import Filtered-Colimits.Category.Functors
+open import Filtered-Colimits.Category.IsoCat
 
 open Category
 open IsPoset
@@ -49,13 +49,3 @@ module _ ℓ ℓ' where
       where
       g : I → 𝑩 [ G ⟅ x ⟆ , G ⟅ y ⟆ ]
       g i = invP 𝑩 (eqOb i x) ⋆⟨ 𝑩 ⟩ F ⟪ x≤y ⟫ ⋆⟨ 𝑩 ⟩ morP 𝑩 (eqOb i y)
-
-  POSET' : Category (ℓ-suc (ℓ-max ℓ ℓ')) ℓ --Poset with standard maps
-  POSET' .ob = Poset ℓ ℓ'
-  POSET' .Hom[_,_] (A , _) (B , _) = A → B
-  POSET' .id = λ x → x
-  POSET' ._⋆_ f g = λ x → g (f x)
-  POSET' .⋆IdL f = refl
-  POSET' .⋆IdR f = refl
-  POSET' .⋆Assoc f g h = refl
-  POSET' .isSetHom {A , strA} {B , strB} f g p q = isSetΠ (λ _ → is-set (isPoset strB)) f g p q

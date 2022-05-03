@@ -1,5 +1,4 @@
-{-# OPTIONS --cubical #-}
-
+module Filtered-Colimits.Limits.Limits where
 
 open import Cubical.Foundations.Prelude
 
@@ -21,7 +20,6 @@ open Cone
 open LimCone
 open NatTrans
 open CatIso
-
 
 module _ {J : Category ℓJ ℓJ'}
          {C : Category ℓC ℓC'}
