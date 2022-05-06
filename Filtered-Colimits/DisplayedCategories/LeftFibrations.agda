@@ -1,4 +1,4 @@
-module Filtered-Colimits.DisplayedCategories.DispCatCat where
+module Filtered-Colimits.DisplayedCategories.LeftFibrations where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
@@ -14,14 +14,13 @@ open import Cubical.Categories.Instances.Sets
 open import Cubical.Categories.Morphism
 
 open import Filtered-Colimits.General.Lemma
+open import Filtered-Colimits.General.Poset
 open import Filtered-Colimits.Category.Functors
+open import Filtered-Colimits.Category.PosetCat
 open import Filtered-Colimits.DisplayedCategories.DisplayedCategories
 open import Filtered-Colimits.DisplayedCategories.IsoDispCat
 open import Filtered-Colimits.DisplayedCategories.Functors
-
-private
-  variable
-    ℓC ℓC' : Level
+open import Filtered-Colimits.DisplayedCategories.DispPreorder
 
 open Category
 open dispCat
@@ -34,42 +33,28 @@ open NatTrans
 open dispCatIso
 open NatIso
 open isIso
+open eqFunct
+
+private
+  variable
+    ℓC ℓC' : Level
 
 module _ (C : Category ℓC ℓC')
          (ℓD ℓD' : Level) where
 
   private
     ℓ = ℓ-max (ℓ-max ℓC ℓD) (ℓ-max ℓC' ℓD')
-
-  dispPreorderCat : Category (ℓ-suc ℓ) ℓ
-  dispPreorderCat .ob = dispPreorder C ℓD ℓD'
-  dispPreorderCat .Hom[_,_] D D' = dispCat-Funct (disp-cat D) (disp-cat D')
-  dispPreorderCat .id = dC-idFunct
-  dispPreorderCat ._⋆_ F G = F ⋆ᵈᶠ G
-  dispPreorderCat .⋆IdL = dF-lUnit
-  dispPreorderCat .⋆IdR = dF-rUnit
-  dispPreorderCat .⋆Assoc = dF-Assoc
-  dispPreorderCat .isSetHom {D} {D'} F G p q = sym (≡→eq-dF→≡ p) ∙ cong eq-dF→≡ p'≡q' ∙ ≡→eq-dF→≡ q
-    where
-    p' = ≡→eq-dF p
-    q' = ≡→eq-dF q
-    eq : {x : ob C} → (X : disp-cat D ⦅ x ⦆) → eq-dF-ob p' X ≡ eq-dF-ob q' X
-    eq X = isSetFiber (is-disp-preorder D') _ (F ⟅ X ⟆ᴰ) (G ⟅ X ⟆ᴰ) (eq-dF-ob p' X) (eq-dF-ob q' X)
-    p'≡q' = ≡eq-dF p' q' eq
-
-  -- Pb of level
-  --leftFibrUnivDispPreorderCat : Category (ℓ-suc ℓ) ℓ
-  --leftFibrUnivDispPreorderCat = ΣPropCat dispPreorderCat (λ D → isUnivalent-dC (disp-cat D) × isLeftFibration {!disp-cat D!} , isProp× (isProp-isUnivalent-dC _) (isProp-isLeftFibration _))
-
+    
   leftFibrUnivDispPreorderCat : Category (ℓ-suc ℓ) ℓ
   leftFibrUnivDispPreorderCat .ob = Σ[ D ∈ dispPreorder C ℓD ℓD' ] isUnivalent-dC (disp-cat D) × isLeftFibration (disp-cat D)
-  leftFibrUnivDispPreorderCat .Hom[_,_] (D , _) (D' , _) = dispPreorderCat [ D , D' ]
-  leftFibrUnivDispPreorderCat .id {D , _} = id dispPreorderCat {D}
-  leftFibrUnivDispPreorderCat ._⋆_ {D , _} {D' , _} {D'' , _} = _⋆_ dispPreorderCat {x = D} {y = D'} {z = D''}
-  leftFibrUnivDispPreorderCat .⋆IdL {D , _} {D' , _} = ⋆IdL dispPreorderCat {x = D} {y = D'}
-  leftFibrUnivDispPreorderCat .⋆IdR {D , _} {D' , _} = ⋆IdR dispPreorderCat {x = D} {y = D'}
-  leftFibrUnivDispPreorderCat .⋆Assoc {D , _} {D' , _} {D'' , _} {D''' , _} = ⋆Assoc dispPreorderCat {x = D} {y = D'} {z = D''} {w = D'''}
-  leftFibrUnivDispPreorderCat .isSetHom {D , _} {D' , _} = isSetHom dispPreorderCat {x = D} {y = D'}
+  leftFibrUnivDispPreorderCat .Hom[_,_] (D , _) (D' , _) = (dispPreorderCat C ℓD ℓD') [ D , D' ]
+  leftFibrUnivDispPreorderCat .id {D , _} = id (dispPreorderCat C ℓD ℓD') {D}
+  leftFibrUnivDispPreorderCat ._⋆_ {D , _} {D' , _} {D'' , _} = _⋆_ (dispPreorderCat C ℓD ℓD') {x = D} {y = D'} {z = D''}
+  leftFibrUnivDispPreorderCat .⋆IdL {D , _} {D' , _} = ⋆IdL (dispPreorderCat C ℓD ℓD') {x = D} {y = D'}
+  leftFibrUnivDispPreorderCat .⋆IdR {D , _} {D' , _} = ⋆IdR (dispPreorderCat C ℓD ℓD') {x = D} {y = D'}
+  leftFibrUnivDispPreorderCat .⋆Assoc {D , _} {D' , _} {D'' , _} {D''' , _} = ⋆Assoc (dispPreorderCat C ℓD ℓD') {x = D} {y = D'} {z = D''} {w = D'''}
+  leftFibrUnivDispPreorderCat .isSetHom {D , _} {D' , _} = isSetHom (dispPreorderCat C ℓD ℓD') {x = D} {y = D'}
+
 
 module _ {ℓD : Level}
          {C : Category ℓC ℓC'} where
@@ -133,7 +118,7 @@ module _ {ℓD : Level}
 
     isUnivDG : (G : Functor C (SET ℓD)) → isUnivalent-dC (D G)
     isUnivDG G a b .equiv-proof f = (a≡b , makeDispCatIsoPath (D G) (dC-pathToIso (D G) a≡b) f (snd (G ⟅ _ ⟆) _ _ _ _)) ,
-                                    λ {(g , p) → Σ≡Prop (λ p → isSetDispCatIso (D G) _ _ _ _) (snd (G ⟅ _ ⟆) _ _ _ _)}
+                                    λ {(g , p) → Σ≡Prop (λ p → isSetDispCatIso (D G) idCatIso _ _ _ _) (snd (G ⟅ _ ⟆) _ _ _ _)}
       where
       a≡b = sym (funExt⁻ (F-id G) a) ∙ dC-mor f
 

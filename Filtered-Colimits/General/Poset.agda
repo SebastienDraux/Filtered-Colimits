@@ -10,7 +10,8 @@ private
 open PosetStr
 
 ieq : (P : Poset ℓ ℓ') → (a b : fst P) → Type ℓ'
-ieq P a b = _≤_ (snd P) a b 
+ieq P a b = _≤_ (snd P) a b
+  
 syntax ieq P a b = a ≤[ P ] b
 
 ≡→≤ : (P : Poset ℓ ℓ') → {a b : fst P} → a ≡ b → a ≤[ P ] b

@@ -3,6 +3,7 @@ module Filtered-Colimits.DisplayedCategories.DisplayedCategories where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.GroupoidLaws
 
 open import Cubical.Relation.Binary.Poset
 
@@ -137,31 +138,78 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
          (G ⋆⟨ E ⟩ H) ⋆⟨ E ⟩ K                                                 ≡⟨ ⋆Assoc E _ _ _ ⟩
          G ⋆⟨ E ⟩ (H ⋆⟨ E ⟩ K)                                                 ∎
 
-    record isDispPreorder : Type (ℓ-max (ℓ-max ℓC ℓD) (ℓ-max ℓC' ℓD')) where
-      field
-        isSetFiber : (x : ob C) → isSet (D ⦅ x ⦆)
-        isPropMor : {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → (Y : D ⦅ y ⦆) → isProp (D [ f , X , Y ]ᴰ)
+module _ {ℓC ℓC' ℓD ℓD' : Level}
+         {C : Category ℓC ℓC'}
+         (D : dispCat C ℓD ℓD') where
 
-    open isDispPreorder
+  record isDispPreorder : Type (ℓ-max (ℓ-max ℓC ℓD) (ℓ-max ℓC' ℓD')) where
+    field
+      isSetFiber : (x : ob C) → isSet (D ⦅ x ⦆)
+      isPropMor : {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → (Y : D ⦅ y ⦆) → isProp (D [ f , X , Y ]ᴰ)
 
-    isProp-isDispPreorder : isProp isDispPreorder
-    isProp-isDispPreorder isDisPreoderD isDisPreoderD' i .isSetFiber = isPropΠ (λ _ → isPropIsSet) (isSetFiber isDisPreoderD) (isSetFiber isDisPreoderD') i
-    isProp-isDispPreorder isDisPreoderD isDisPreoderD' i .isPropMor = isPropΠ3 (λ _ _ _ → isPropIsProp) (isPropMor isDisPreoderD) (isPropMor isDisPreoderD') i
+  open isDispPreorder
 
-    isLeftFibration : Type (ℓ-max (ℓ-max ℓC ℓD) (ℓ-max ℓC' ℓD'))
-    isLeftFibration = {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → ∃![ Y ∈ D ⦅ y ⦆ ] (D [ f , X , Y ]ᴰ)
+  isProp-isDispPreorder : isProp isDispPreorder
+  isProp-isDispPreorder isDisPreoderD isDisPreoderD' i .isSetFiber = isPropΠ (λ _ → isPropIsSet) (isSetFiber isDisPreoderD) (isSetFiber isDisPreoderD') i
+  isProp-isDispPreorder isDisPreoderD isDisPreoderD' i .isPropMor = isPropΠ3 (λ _ _ _ → isPropIsProp) (isPropMor isDisPreoderD) (isPropMor isDisPreoderD') i
+  isLeftFibration : Type (ℓ-max (ℓ-max ℓC ℓD) (ℓ-max ℓC' ℓD'))
+  isLeftFibration = {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → ∃![ Y ∈ D ⦅ y ⦆ ] (D [ f , X , Y ]ᴰ)
 
-    leftFib-getOb :  isLeftFibration → {x y : ob C} → C [ x , y ] → D ⦅ x ⦆ → D ⦅ y ⦆
-    leftFib-getOb isLeftFibD f X = fst (fst (isLeftFibD f X))
+  isProp-isLeftFibration : isProp isLeftFibration
+  isProp-isLeftFibration = isPropImplicitΠ2 (λ _ _ → isPropΠ2 (λ _ _ → isPropIsContr))
+
+  module _ (isLeftFibD : isLeftFibration)
+           {x y : ob C}
+           (f : C [ x , y ])
+           (X : D ⦅ x ⦆) where
+    
+    leftFib-getOb : D ⦅ y ⦆
+    leftFib-getOb = fst (fst (isLeftFibD f X))
   
-    leftFib-getHom :  (isLeftFibD : isLeftFibration) → {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → D [ f , X , leftFib-getOb isLeftFibD f X ]ᴰ
-    leftFib-getHom isLeftFibD f X = snd (fst (isLeftFibD f X))
+    leftFib-getHom :  D [ f , X , leftFib-getOb ]ᴰ
+    leftFib-getHom = snd (fst (isLeftFibD f X))
 
-    leftFib-unicityOb : (isLeftFibD : isLeftFibration) → {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → ((Y , F) : Σ[ Y ∈ D ⦅ y ⦆ ] (D [ f , X , Y ]ᴰ)) → leftFib-getOb isLeftFibD f X ≡ Y
-    leftFib-unicityOb isLeftFibD f X (Y , F) = cong fst (snd (isLeftFibD f X) (Y , F))
+    leftFib-unicityOb : ((Y , F) : Σ[ Y ∈ D ⦅ y ⦆ ] (D [ f , X , Y ]ᴰ)) → leftFib-getOb  ≡ Y
+    leftFib-unicityOb (Y , F) = cong fst (snd (isLeftFibD f X) (Y , F))
 
-    isProp-isLeftFibration : isProp isLeftFibration
-    isProp-isLeftFibration = isPropImplicitΠ2 (λ _ _ → isPropΠ2 (λ _ _ → isPropIsContr))
+module _ {ℓD ℓD' : Level}
+         {C : Category ℓC ℓC'}
+         (D : dispCat C ℓD ℓD')  where
+
+  isCocartesian : {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → (Y : D ⦅ y ⦆) → D [ f , X , Y ]ᴰ → Type (ℓ-max (ℓ-max ℓC ℓC') (ℓ-max ℓD ℓD'))
+  isCocartesian {x} {y} f X Y F = {z : ob C} → {g : C [ y , z ]} → {h : C [ x , z ]} → (p : f ⋆⟨ C ⟩ g ≡ h) → {Z : D ⦅ z ⦆} → (H : D [ h , X , Z ]ᴰ) →
+                                           ∃![ G ∈ D [ g , Y , Z ]ᴰ ] subst (λ h → D [ h , X , Z ]ᴰ) p (F ⋆⟨ D ⟩ᴰ G) ≡ H
+                                           
+  isCocartesian-getHom : {x y z : ob C} → (f : C [ x , y ])→ {g : C [ y , z ]} → {h : C [ x , z ]} → (p : f ⋆⟨ C ⟩ g ≡ h) →
+                         (X : D ⦅ x ⦆) → (Y : D ⦅ y ⦆) → (Z : D ⦅ z ⦆)→ (F : D [ f , X , Y ]ᴰ) → D [ h , X , Z ]ᴰ → isCocartesian f X Y F → D [ g , Y , Z ]ᴰ
+  isCocartesian-getHom f p X Y Z F H isCocart = fst (fst (isCocart p H))
+
+  isProp-isCocartesian : {x y : ob C} → {f : C [ x , y ]} → {X : D ⦅ x ⦆} → {Y : D ⦅ y ⦆} → (F : D [ f , X , Y ]ᴰ) → isProp (isCocartesian f X Y F)
+  isProp-isCocartesian F = isPropImplicitΠ2 λ _ _ → isPropImplicitΠ (λ _ → isPropΠ (λ _ → isPropImplicitΠ (λ _ → isPropΠ (λ _ → isPropIsContr))))
+  
+  isCocartesianFibration : Type (ℓ-max (ℓ-max ℓC ℓC') (ℓ-max ℓD ℓD'))
+  isCocartesianFibration = {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → ∃![ Y ∈ D ⦅ y ⦆ ] Σ[ F ∈ D [ f , X , Y ]ᴰ ] isCocartesian f X Y F
+
+  isProp-isCocartesianFibration : isProp isCocartesianFibration
+  isProp-isCocartesianFibration = isPropImplicitΠ2 (λ _ _ → isPropΠ2 (λ _ _ → isPropIsContr))
+  
+  module _ (isCocartFibD : isCocartesianFibration)
+           {x y : ob C}
+           (f : C [ x , y ])
+           (X : D ⦅ x ⦆) where
+
+    isCocartesianFibration-getOb : D ⦅ y ⦆
+    isCocartesianFibration-getOb = fst (fst (isCocartFibD f X))
+
+    isCocartesianFibration-unicityOb : (Y : D ⦅ y ⦆) → Σ[ F ∈ D [ f , X , Y ]ᴰ ] isCocartesian f X Y F → isCocartesianFibration-getOb ≡ Y
+    isCocartesianFibration-unicityOb Y (F , isCocartF) = cong fst (snd (isCocartFibD f X) (Y , F , isCocartF))
+
+    isCocartesianFibration-getHom : D [ f , X , isCocartesianFibration-getOb ]ᴰ
+    isCocartesianFibration-getHom = fst (snd (fst (isCocartFibD f X)))
+
+    isCocartesianFibration-getIsCocart : isCocartesian f X isCocartesianFibration-getOb isCocartesianFibration-getHom
+                                       
+    isCocartesianFibration-getIsCocart = snd (snd (fst (isCocartFibD f X)))
 
 open isDispPreorder
 
@@ -172,80 +220,5 @@ module _ (C : Category ℓC ℓC') where
       disp-cat : dispCat C ℓD ℓD'
       is-disp-preorder : isDispPreorder disp-cat
 
-
-module _ {ℓD ℓD' : Level}
-         {C : Category ℓC ℓC'}
-         {D : dispCat C ℓD ℓD'} where
-         
---  ⋆dispSubstCongₗ : {x y z : ob C} → (f : C [ x , y ]) → (g g' : C [ y , z ]) → (p : g ≡ g') →
-----                   (X : D ⦅ x ⦆) → (Y : D ⦅ y ⦆) → (Z : D ⦅ z ⦆) →
---                   (F : D [ f , X , Y ]ᴰ) → (G : D [ g , Y , Z ]ᴰ) →
- --                  F ⋆⟨ D ⟩ᴰ  subst (λ g → D [ g , Y , Z ]ᴰ) p G ≡ subst (λ g → D [ f ⋆⟨ C ⟩ g , X , Z ]ᴰ) p (F ⋆⟨ D ⟩ᴰ G)
-  
---  isProp-isDispOverPoset : (D : dispCat C ℓD ℓD') → isProp (isDispOverPoset D)
---  isProp-isDispOverPoset D overPosetD overPosetD' i .isSetFiber = isPropΠ (λ _ → isPropIsSet) (isSetFiber overPosetD) (isSetFiber overPosetD') i
---  isProp-isDispOverPoset D overPosetD overPosetD' i .isPropMor = isPropΠ3 (λ _ _ _ → isPropIsProp) (isPropMor overPosetD) (isPropMor overPosetD') i
---  isProp-isDispOverPoset D overPosetD overPosetD' i .morImpl = isPropΠ2 (λ _ _ → isPropIsContr) (morImpl overPosetD) (morImpl overPosetD') i
---  isProp-isDispOverPoset D overPosetD overPosetD' i .isUniv = isProp-dC-isUnivalent D (isUniv overPosetD) (isUniv overPosetD') i
-
---module _ {ℓD ℓD' : Level}
---         {C : Category ℓC ℓC'} where
-
---  fromPOSET : Functor C (POSET ℓD ℓD') → dispCat C ℓD ℓD'
---  fromPOSET F .dC-ob x = fst (F ⟅ x ⟆)
---  fromPOSET F .dC-hom {x} {y} f a b = F ⟪ f ⟫ ⟅ a ⟆ ≤[ F ⟅ y ⟆ ] b
---  fromPOSET F .dC-homSet {x} {y} f a b = isProp→isSet (is-prop-valued (isPoset (snd (F ⟅ y ⟆))) _ _)
---  fromPOSET F .dC-id {x} {a} = ≡→≤ (F ⟅ x ⟆) (cong (λ F → F ⟅ a ⟆) (F-id F))
---  fromPOSET F .dC-⋆ {x} {y} {z} {a} {b} {c} {f} {g} p q =
---    (F ⟪ f ⋆⟨ C ⟩ g ⟫) ⟅ a ⟆          ≤[ F ⟅ z ⟆ ]⟨ ≡→≤ (F ⟅ z ⟆) (cong (λ F → F ⟅ a ⟆) (F-seq F _ _)) ⟩
- --   (F ⟪ g ⟫) ⟅ (F ⟪ f ⟫) ⟅ a ⟆ ⟆    ≤[ F ⟅ z ⟆ ]⟨ F ⟪ g ⟫ ⟪ p ⟫ ⟩
- --   F ⟪ g ⟫ ⟅ b ⟆                    ≤[ F ⟅ z ⟆ ]⟨ q ⟩ 
- --   c [ F ⟅ z ⟆ ]□
- -- fromPOSET F .dC-⋆IdL {x} {y} p = is-prop-valued (isPoset (snd (F ⟅ y ⟆))) _ _ _ _
---  fromPOSET F .dC-⋆IdR {x} {y} p = is-prop-valued (isPoset (snd (F ⟅ y ⟆))) _ _ _ _
---  fromPOSET F .dC-⋆Assoc {z = z} p q r = is-prop-valued (isPoset (snd (F ⟅ z ⟆))) _ _ _ _
-
---  toPoset : (D : dispCat C ℓD ℓD') → isDispOverPoset D → ob C → Poset ℓD ℓD'
---  toPoset D overPosetD x = D ⦅ x ⦆ , posetStruct
---    where
---    posetStruct : PosetStr ℓD' (D ⦅ x ⦆)
---    posetStruct ._≤_ a b = D [ id C , a , b ]ᴰ --not sure
---    posetStruct .isPoset .is-set = isSetFiber overPosetD x
---    posetStruct .isPoset .is-prop-valued = isPropMor overPosetD (id C)
---    posetStruct .isPoset .is-refl a = dC-id D
---    posetStruct .isPoset .is-trans a b c f g = subst (λ f → D [ f , a , c ]ᴰ) (⋆IdL C (id C)) (f ⋆⟨ D ⟩ᴰ g)
---    posetStruct .isPoset .is-antisym a b f g = equivFun (invEquiv (dC-univEquiv (isUniv overPosetD) a b)) isom
---      where
---      isom : dispCatIso D a b
---      isom .dC-mor = f
---      isom .dC-inv = g
---      isom .dC-sec = isPropMor overPosetD (id C) b b _ _
- --     isom .dC-ret = isPropMor overPosetD (id C) a a _ _
-  
---  toPOSET : (D : dispCat C ℓD ℓD') → isDispOverPoset D → Functor C (POSET ℓD ℓD')
---  toPOSET D overPosetD = F
---    where
---    toPoset' : (x : ob C) → Poset ℓD ℓD'
---    toPoset' x = toPoset D overPosetD x
-    
---    G : {x y : ob C} → (f : C [ x , y ]) → Functor (PosetCategory (toPoset' x)) (PosetCategory (toPoset' y))
---    G {x} {y} f .F-ob a = fst (fst (morImpl overPosetD f a))
---    G {x} {y} f .F-hom {a} {b} a≤b = {!!}
---    G {x} {y} f .F-id = is-prop-valued (isPoset (snd (toPoset' y))) _ _ _ _
---    G {x} {y} f .F-seq a≤b b≤c = is-prop-valued (snd (toPoset' y)) _ _ _ _
-    
---    F : Functor C (POSET ℓD ℓD')
---    F .F-ob x = toPoset' x
---    F .F-hom f = G f
---    F .F-id {x} = eqFunct→≡ eqG-id
---      where
---      eqG-id : eqFunct (G (id C {x})) 𝟙⟨ PosetCategory (toPoset' x) ⟩
---      eqG-id .eq-ob a = cong fst (snd (morImpl overPosetD (id C) a) (a , (dC-id D)))
---      eqG-id .eq-hom a≤b = is-prop-valued (isPoset (snd (toPoset' x))) _ _ _ _
---    F .F-seq {x} {y} {z} f g = eqFunct→≡ eqG-seq
---      where
---      eqG-seq : eqFunct (G (f ⋆⟨ C ⟩ g)) (G f ⋆ᶠ G g)
---      eqG-seq .eq-ob a = cong fst (snd (morImpl overPosetD (f ⋆⟨ C ⟩ g) a) (_ , snd (fst (morImpl overPosetD f a)) ⋆⟨ D ⟩ᴰ snd (fst (morImpl overPosetD g _))))
---      eqG-seq .eq-hom a≤b = is-prop-valued (isPoset (snd (toPoset' z))) _ _ _ _
 
 
