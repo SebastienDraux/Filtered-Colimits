@@ -17,6 +17,7 @@ open import Cubical.Categories.Morphism
 open import Filtered-Colimits.General.Lemma
 open import Filtered-Colimits.General.Poset
 open import Filtered-Colimits.Category.Functors
+open import Filtered-Colimits.Category.NatTransfo
 open import Filtered-Colimits.Category.PosetCat
 open import Filtered-Colimits.DisplayedCategories.DisplayedCategories
 open import Filtered-Colimits.DisplayedCategories.IsoDispCat
@@ -60,7 +61,6 @@ module _ (C : Category ℓC ℓC')
               Σ≡Prop isProp-preservesCocartMor (⋆Assoc (dispPreorderCat C ℓD ℓD') {x = D} {y = D'} {z = D''} {w = D'''} F G H)
   cocartFibrUnivDispPreorderCat .isSetHom {D , _} {D' , _} = isSetΣ (isSetHom (dispPreorderCat C ℓD ℓD') {x = D} {y = D'}) (λ F → isProp→isSet (isProp-preservesCocartMor F))
 
-
 module _ {ℓD ℓD' : Level}
          {C : Category ℓC ℓC'} where
 
@@ -96,6 +96,7 @@ module _ {ℓD ℓD' : Level}
       u' = isCocartesianFibration-getHom (disp-cat D) isCocartFibD f a'
     H (D , isUnivD , isCocartFibD) f .F-id = is-prop-valued (snd (toPoset (D , isUnivD , isCocartFibD) _)) _ _ _ _
     H (D , isUnivD , isCocartFibD) f .F-seq u v = is-prop-valued (snd (toPoset (D , isUnivD , isCocartFibD) _)) _ _ _ _
+    
     G :  ob (cocartFibrUnivDispPreorderCat C ℓD ℓD') → Functor C (POSET ℓD ℓD')
     G (D , isUnivD , isCocartFibD) .F-ob = toPoset (D , isUnivD , isCocartFibD)
     G (D , isUnivD , isCocartFibD) .F-hom = H (D , isUnivD , isCocartFibD)
@@ -107,7 +108,7 @@ module _ {ℓD ℓD' : Level}
     G (D , isUnivD , isCocartFibD) .F-seq f g = eqFunct→≡ eq
       where
       eq : eqFunct (H (D , isUnivD , isCocartFibD) (f ⋆⟨ C ⟩ g)) (H (D , isUnivD , isCocartFibD) f ⋆ᶠ H (D , isUnivD , isCocartFibD) g)
-      eq .eq-ob a = isCocartesianFibration-unicityOb (disp-cat D) isCocartFibD (f ⋆⟨ C ⟩ g) a c ((u ⋆⟨ disp-cat D ⟩ᴰ v) , isCocart-seq)
+      eq .eq-ob a = isCocartesianFibration-unicityOb (disp-cat D) isCocartFibD (f ⋆⟨ C ⟩ g) a c ((u ⋆⟨ disp-cat D ⟩ᴰ v) , isCocart-uv)
         where
         b = (H (D , isUnivD , isCocartFibD) f) ⟅ a ⟆
         u = isCocartesianFibration-getHom (disp-cat D) isCocartFibD f a
@@ -117,12 +118,7 @@ module _ {ℓD ℓD' : Level}
         v = isCocartesianFibration-getHom (disp-cat D) isCocartFibD g b
         isCocart-v = isCocartesianFibration-getIsCocart (disp-cat D) isCocartFibD g b
 
-        isCocart-seq : isCocartesian (disp-cat D) (f ⋆⟨ C ⟩ g) a c (u ⋆⟨ disp-cat D ⟩ᴰ v)
-        isCocart-seq {g = g'} p {d} w = uniqueExists v'
-                          (isPropMor (is-disp-preorder D) _ _ _ _ _) (λ _ → isProp→isSet (isPropMor (is-disp-preorder D) _ _ _) _ _) λ _ _ → isPropMor (is-disp-preorder D) _ _ _ _ _
-          where
-          u' = isCocartesian-getHom (disp-cat D) f (sym (⋆Assoc C _ _ _) ∙ p) a b d u w isCocart-u
-          v' = isCocartesian-getHom (disp-cat D) g refl b c d v u' isCocart-v
+        isCocart-uv = isCocart-seq D f g a b c u v isCocart-u isCocart-v
         
       eq .eq-hom u  = isPropMor (is-disp-preorder D) _ _ _ _ _
 
@@ -197,10 +193,10 @@ module _ {ℓD ℓD' : Level}
         where
         ie' : G ⟪ g ⟫ ⟅ b ⟆ ≤[ G ⟅ _ ⟆ ] c
         ie' = 
-          G ⟪ g ⟫ ⟅ G ⟪ f ⟫ ⟅ a ⟆ ⟆     ≤[ G ⟅ _ ⟆ ]⟨ ≡→≤ (G ⟅ _ ⟆) (cong (λ H → H ⟅ a ⟆) (sym (F-seq G _ _))) ⟩
+          G ⟪ g ⟫ ⟅ G ⟪ f ⟫ ⟅ a ⟆ ⟆      ≤[ G ⟅ _ ⟆ ]⟨ ≡→≤ (G ⟅ _ ⟆) (cong (λ H → H ⟅ a ⟆) (sym (F-seq G _ _))) ⟩
           G ⟪ f ⋆⟨ C ⟩ g ⟫ ⟅ a ⟆         ≤[ G ⟅ _ ⟆ ]⟨ ≡→≤ (G ⟅ _ ⟆) (cong (λ f → G ⟪ f ⟫ ⟅ a ⟆) p) ⟩
-          G ⟪ h ⟫ ⟅ a ⟆                 ≤[ G ⟅ _ ⟆ ]⟨ ie ⟩
-          c                              [ G ⟅ _ ⟆ ]□
+          G ⟪ h ⟫ ⟅ a ⟆                  ≤[ G ⟅ _ ⟆ ]⟨ ie ⟩
+          c                               [ G ⟅ _ ⟆ ]□
        
       unicity : (b' : fst (G ⟅ _ ⟆)) → (ie : (G ⟪ f ⟫) ⟅ a ⟆ ≤[ G ⟅ _ ⟆ ] b') → isCocartesian (D G) f a b' ie → b ≡ b'
       unicity b' ie isCocart-ie = is-antisym (snd (G ⟅ _ ⟆)) b b' b≤b' b'≤b
@@ -237,7 +233,7 @@ module _ {ℓD ℓD' : Level}
         α ⟦ _ ⟧ ⟅ (G ⟪ g ⟫) ⟅ b ⟆ ⟆    ≤[ H ⟅ _ ⟆ ]⟨ α ⟦ _ ⟧ ⟪ v ⟫ ⟩
         α ⟦ _ ⟧ ⟅ G ⟪ h ⟫ ⟅ a ⟆ ⟆      ≤[ H ⟅ _ ⟆ ]⟨  ≡→≤ (H ⟅ _ ⟆) (cong (_⟅ a ⟆) (N-hom α h)) ⟩
         (H ⟪ h ⟫) ⟅ α ⟦ _ ⟧ ⟅ a ⟆ ⟆    ≤[ H ⟅ _ ⟆ ]⟨ ie' ⟩
-        c'                              [ H ⟅ _ ⟆ ]□
+        c'                               [ H ⟅ _ ⟆ ]□
         
     𝑭 : Functor (FUNCTOR C (POSET ℓD ℓD')) (cocartFibrUnivDispPreorderCat C ℓD ℓD')
     𝑭 .F-ob G = D-preorder G , isUnivDG G , isCocartFibrDG G
@@ -252,3 +248,97 @@ module _ {ℓD ℓD' : Level}
       eq : eq-dF (F (α ●ᵛ β)) ((F α) ⋆ᵈᶠ (F β))
       eq .eq-dF-ob a = refl
       eq .eq-dF-hom p = is-prop-valued (snd (G'' ⟅ _ ⟆)) _ _ _ _
+
+  functToPOSET→dispCat→functToPOSET : NatIso (dispCat→functToPOSET ∘F functToPOSET→dispCat) 𝟙⟨ FUNCTOR C (POSET ℓD ℓD') ⟩
+  functToPOSET→dispCat→functToPOSET = α
+    where
+    U = (dispCat→functToPOSET ∘F functToPOSET→dispCat)
+    
+    H : (F : Functor C (POSET ℓD ℓD')) → (x : ob C) → Functor (PosetCategory ((U ⟅ F ⟆) ⟅ x ⟆)) (PosetCategory (F ⟅ x ⟆))
+    H F x .F-ob a = a
+    H F x .F-hom {a} {b} u =  a ≤[ F ⟅ x ⟆ ]⟨ ≡→≤ (F ⟅ x ⟆) (cong (_⟅ a ⟆) (sym (F-id F))) ⟩ (F ⟪ id C ⟫) ⟅ a ⟆ ≤[ F ⟅ x ⟆ ]⟨ u ⟩ b [ F ⟅ x ⟆ ]□
+    H F x .F-id  = is-prop-valued (isPoset (snd (F ⟅ x ⟆))) _ _ _ _
+    H F x .F-seq u v = is-prop-valued (isPoset (snd (F ⟅ x ⟆))) _ _ _ _
+
+    H' : (F : Functor C (POSET ℓD ℓD')) → (x : ob C) → Functor (PosetCategory (F ⟅ x ⟆)) (PosetCategory ((U ⟅ F ⟆) ⟅ x ⟆))
+    H' F x .F-ob a = a
+    H' F x .F-hom {a} {b} u = (F ⟪ id C ⟫) ⟅ a ⟆ ≤[ F ⟅ x ⟆ ]⟨ ≡→≤ (F ⟅ x ⟆) (cong (_⟅ a ⟆) (F-id F)) ⟩ a ≤[ F ⟅ x ⟆ ]⟨ u ⟩ b [ F ⟅ x ⟆ ]□
+    H' F x .F-id  = is-prop-valued (isPoset (snd ((U ⟅ F ⟆) ⟅ x ⟆))) _ _ _ _
+    H' F x .F-seq u v = is-prop-valued (isPoset (snd ((U ⟅ F ⟆) ⟅ x ⟆))) _ _ _ _
+    
+    β : (F : Functor C (POSET ℓD ℓD')) → NatTrans (U ⟅ F ⟆) F
+    β F .N-ob x = H F x
+    β F .N-hom {x} {y} f = eqFunct→≡ (record { eq-ob = λ _ → refl ; eq-hom = λ _ → is-prop-valued (isPoset (snd (F ⟅ y ⟆))) _ _ _ _ })
+    
+    isIsoβ : (F : Functor C (POSET ℓD ℓD')) → (x : ob C) → isIso (POSET ℓD ℓD') {x = (U ⟅ F ⟆) ⟅ x ⟆} {y = F ⟅ x ⟆} ((β F) ⟦ x ⟧)
+    isIsoβ F x .inv = H' F x
+    isIsoβ F x .sec = eqFunct→≡ (record { eq-ob = λ _ → refl ; eq-hom = λ _ → is-prop-valued (isPoset (snd (F ⟅ x ⟆))) _ _ _ _ })
+    isIsoβ F x .ret = eqFunct→≡ (record { eq-ob = λ _ → refl ; eq-hom = λ _ → is-prop-valued (isPoset (snd (F ⟅ x ⟆))) _ _ _ _ })
+
+    α : NatIso U 𝟙⟨ FUNCTOR C (POSET ℓD ℓD') ⟩
+    α .trans .N-ob = β
+    α .trans .N-hom {F} {G} γ = makeNatTransPath (funExt (λ x → eqFunct→≡ (record { eq-ob = λ _ → refl ; eq-hom = λ _ → is-prop-valued (isPoset (snd (G ⟅ x ⟆))) _ _ _ _ })))
+
+    α .nIso F = CatIso→isIso (natIso→FUNCatIso (record { trans = β F ; nIso = isIsoβ F }))
+
+
+  dispCat→functToPOSET→dispCat : NatIso (functToPOSET→dispCat ∘F dispCat→functToPOSET) 𝟙⟨ cocartFibrUnivDispPreorderCat C ℓD ℓD' ⟩
+  dispCat→functToPOSET→dispCat = α
+    where
+    V = functToPOSET→dispCat ∘F dispCat→functToPOSET
+
+    F : (D : ob (cocartFibrUnivDispPreorderCat C ℓD ℓD')) → dispCat-Funct (disp-cat (fst (V ⟅ D ⟆))) (disp-cat (fst D))
+    F (D , isUnivD , isCocartD) .dF-ob a = a
+    F (D , isUnivD , isCocartD) .dF-hom {x} {y} {f} {a} {b} u = subst (λ f → (disp-cat D) [ f , _ , _ ]ᴰ) (⋆IdR C f) (isCocartesianFibration-getHom (disp-cat D) isCocartD f a ⋆⟨ disp-cat D ⟩ᴰ u)
+    F (D , isUnivD , isCocartD) .dF-id = isPropMor (is-disp-preorder D) _ _ _ _ _
+    F (D , isUnivD , isCocartD) .dF-seq u v = isPropMor (is-disp-preorder D) _ _ _ _ _
+
+    preservF : (D : ob (cocartFibrUnivDispPreorderCat C ℓD ℓD')) → preservesCocartMor (F D)
+    preservF (D , isUnivD , isCocartD) {f = f} {a} {b} u' isCocart-u' {g = g} {h} p {c} w = uniqueExists (subst (λ f → (disp-cat D) [ f , b , c ]ᴰ) (⋆IdR C _) (t' ⋆⟨ disp-cat D ⟩ᴰ v))
+                                        (isPropMor (is-disp-preorder D) _ _ _ _ _) (λ _ → isProp→isSet (isPropMor (is-disp-preorder D) _ _ _) _ _) λ _ _ → isPropMor (is-disp-preorder D) _ _ _ _ _
+      where
+      a' = isCocartesianFibration-getOb (disp-cat D) isCocartD h a
+      t = isCocartesianFibration-getHom (disp-cat D) isCocartD h a
+      isCocart-t = isCocartesianFibration-getIsCocart (disp-cat D) isCocartD h a
+      w' = isCocartesian-getHom (disp-cat D) h (⋆IdR C _) a a' c t w isCocart-t
+      v = isCocartesian-getHom (disp-cat (fst (V ⟅ (D , isUnivD , isCocartD) ⟆))) f p a b c u' w' isCocart-u'
+      t' = isCocartesianFibration-getHom (disp-cat D) isCocartD g b
+      
+    F' : (D : ob (cocartFibrUnivDispPreorderCat C ℓD ℓD')) → dispCat-Funct (disp-cat (fst D)) (disp-cat (fst (V ⟅ D ⟆)))
+    F' (D , isUnivD , isCocartD) .dF-ob a = a
+    F' (D , isUnivD , isCocartD) .dF-hom {x} {y} {f} {a} {c} u = isCocartesian-getHom (disp-cat D) f (⋆IdR C _) a b c v u isCocart-v
+      where
+      b = isCocartesianFibration-getOb (disp-cat D) isCocartD f a
+      v = isCocartesianFibration-getHom (disp-cat D) isCocartD f a
+      isCocart-v = isCocartesianFibration-getIsCocart (disp-cat D) isCocartD f a
+    F' D .dF-id = isPropMor (is-disp-preorder (fst (V ⟅ D ⟆))) _ _ _ _ _
+    F' D .dF-seq u v = isPropMor (is-disp-preorder (fst (V ⟅ D ⟆))) _ _ _ _ _
+
+    preservF' : (D : ob (cocartFibrUnivDispPreorderCat C ℓD ℓD')) → preservesCocartMor (F' D)
+    preservF' (D , isUnivD , isCocartFibrD) {f = f} {a} {b} u isCocart-u {g = g} {h} p {c} w' = uniqueExists (isCocartesian-getHom (disp-cat D) g (⋆IdR C _) b b' c t' v' isCocart-t')
+                           (isPropMor (is-disp-preorder D') _ _ _ _ _) (λ _ → isProp→isSet (isPropMor (is-disp-preorder D') _ _ _) _ _) λ _ _ → isPropMor (is-disp-preorder D') _ _ _ _ _
+      where
+      D' = fst (V ⟅ (D , isUnivD , isCocartFibrD) ⟆)
+      b' = isCocartesianFibration-getOb (disp-cat D) isCocartFibrD g b
+      t' = isCocartesianFibration-getHom (disp-cat D) isCocartFibrD g b
+      isCocart-t' = isCocartesianFibration-getIsCocart (disp-cat D) isCocartFibrD g b
+      a' = isCocartesianFibration-getOb (disp-cat D) isCocartFibrD h a
+      u' = isCocartesianFibration-getHom (disp-cat D) isCocartFibrD h a
+      t = isCocartesianFibration-getHom (disp-cat D) isCocartFibrD h a
+      isCocart-t = isCocartesianFibration-getIsCocart (disp-cat D) isCocartFibrD h a
+      v = subst (λ f → (disp-cat D) [ f , _ , _ ]ᴰ) (⋆IdR C _) (u' ⋆⟨ disp-cat D ⟩ᴰ w')
+      w = isCocartesian-getHom (disp-cat D) h (⋆IdR C _) a a' c t v isCocart-t
+      v' = isCocartesian-getHom (disp-cat D) f (p ∙ (sym (⋆IdR C _))) a b c u (t ⋆⟨ disp-cat D ⟩ᴰ w) isCocart-u
+      
+    β : NatTrans V 𝟙⟨ cocartFibrUnivDispPreorderCat C ℓD ℓD' ⟩
+    β .N-ob D = F D , preservF D
+    β .N-hom {D} {D' , _ , _} G = Σ≡Prop isProp-preservesCocartMor (eq-dF→≡ (record { eq-dF-ob = λ _ → refl ; eq-dF-hom = λ _ → isPropMor (is-disp-preorder D') _ _ _ _ _}))
+
+    isIsoβ : (D : ob (cocartFibrUnivDispPreorderCat C ℓD ℓD')) → isIso (cocartFibrUnivDispPreorderCat C ℓD ℓD') {x = V ⟅ D ⟆} {y = D} (β ⟦ D ⟧)
+    isIsoβ D .inv = (F' D) , preservF' D
+    isIsoβ (D , _ , _) .sec = Σ≡Prop isProp-preservesCocartMor (eq-dF→≡ (record { eq-dF-ob = λ _ → refl ; eq-dF-hom = λ _ → isPropMor (is-disp-preorder D) _ _ _ _ _ }))
+    isIsoβ D .ret = Σ≡Prop isProp-preservesCocartMor (eq-dF→≡ (record { eq-dF-ob = λ _ → refl ; eq-dF-hom = λ _ → isPropMor (is-disp-preorder (fst (V ⟅ D ⟆))) _ _ _ _ _ }))
+
+    α : NatIso V 𝟙⟨ cocartFibrUnivDispPreorderCat C ℓD ℓD' ⟩
+    α .trans = β
+    α .nIso = isIsoβ
