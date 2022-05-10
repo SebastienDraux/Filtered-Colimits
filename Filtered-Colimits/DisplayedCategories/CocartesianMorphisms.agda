@@ -4,6 +4,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.Isomorphism
 
 open import Cubical.Data.Sigma
 
@@ -18,9 +19,28 @@ private
     ℓC ℓC' ℓD ℓD' : Level
 
 open Category
+
+module _ {C : Category ℓC ℓC'} where
+  record CatIsIso {x y : ob C} (f : C [ x , y ]) : Type ℓC' where
+    field
+      inv : C [ y , x ]
+      sec : inv ⋆⟨ C ⟩ f ≡ C .id
+      ret : f ⋆⟨ C ⟩ inv ≡ C .id
+
+  iso→precompEquiv : {x y : ob C} {f : C [ x , y ]} (f-inv : CatIsIso f) {z : ob C} → isEquiv {A = C [ y , z ]} {B = C [ x , z ]} (λ g → f ⋆⟨ C ⟩ g)
+  iso→precompEquiv f-inv = isoToIsEquiv (iso _ ((λ g → inv ⋆⟨ C ⟩ g)) p q) where
+     open CatIsIso f-inv
+
+     p : section (λ z → (C ⋆ _) z) (λ g → seq' C inv g)
+     p = (λ h → sym (⋆Assoc C _ _ _) ∙ cong (λ u → u ⋆⟨ C ⟩ h) ret ∙ ⋆IdL C _)
+     
+     q : retract (λ z → (C ⋆ _) z) (λ g → seq' C inv g)
+     q = (λ g → sym (⋆Assoc C _ _ _) ∙ cong (λ u → u ⋆⟨ C ⟩ g) sec ∙ ⋆IdL C _)
+
 open dispCat
 open dispCatIso
 open CatIso
+ 
 
 module _ {C : Category ℓC ℓC'}
          (D : dispCat C ℓD ℓD') where
@@ -84,5 +104,49 @@ module _ {C : Category ℓC ℓC'}
   isCocartesian-id : {x : ob C}  → (X : D ⦅ x ⦆) → isCocartesian D (id C) X X (dC-id D)
   isCocartesian-id X = iso→isCocartesian X X (idDispCatIso D)
 
+  record dispCatIsIso {x y : ob C} {f : C [ x , y ]} (f-inv : CatIsIso {C = C} f) {X : D ⦅ x ⦆} {Y : D ⦅ y ⦆} (F : D [ f , X , Y ]ᴰ) : Type ℓD' where
+    open CatIsIso
+    field
+      dC-inv : D [ inv f-inv , Y , X ]ᴰ
+      -- equivalent to: subst (λ f → D [ f , Y , Y ]ᴰ) (sec f-inv) (dC-inv ⋆⟨ D ⟩ᴰ F) ≡ dC-id D
+      dC-sec : PathP (λ i → D [ sec f-inv i , Y , Y ]ᴰ) (dC-inv ⋆⟨ D ⟩ᴰ F) (dC-id D) 
+      dC-ret : PathP (λ i → D [ ret f-inv i , X , X ]ᴰ) (F ⋆⟨ D ⟩ᴰ dC-inv) (dC-id D)
 
+  open CatIsIso
+  open dispCatIsIso
 
+  u : {x y : ob C} {f : C [ x , y ]} {X : D ⦅ x ⦆} {Y : D ⦅ y ⦆} {F : D [ f , X , Y ]ᴰ} → Σ (CatIsIso f) (λ f-inv → dispCatIsIso f-inv F) ≃ CatIsIso {C = totalCat D} (f , F)
+  u = isoToEquiv (iso α _ (λ _ → refl) (λ _ → refl)) where
+    α : _ → _
+    α (f-inv , F-inv) .inv = (inv f-inv , dC-inv F-inv)
+    α (f-inv , F-inv) .sec i = (sec f-inv i , dC-sec F-inv i)
+    α (f-inv , F-inv) .ret i = (ret f-inv i , dC-ret F-inv i)
+
+  private
+    variable
+      ℓA ℓB : Level
+
+  isCocartesian' : {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → (Y : D ⦅ y ⦆) → D [ f , X , Y ]ᴰ → Type (ℓ-max (ℓ-max ℓC ℓC') (ℓ-max ℓD ℓD'))
+  isCocartesian' {x} {y} f X Y F = {z : ob C} → {g : C [ y , z ]} → {h : C [ x , z ]} → (p : f ⋆⟨ C ⟩ g ≡ h) → {Z : D ⦅ z ⦆} → (H : D [ h , X , Z ]ᴰ) →
+                                           ∃![ G ∈ D [ g , Y , Z ]ᴰ ] PathP (λ i → D [ p i , X , Z ]ᴰ) (F ⋆⟨ D ⟩ᴰ G) H
+
+  isCocartesianFibration' : Type (ℓ-max (ℓ-max ℓC ℓC') (ℓ-max ℓD ℓD'))
+  isCocartesianFibration' = {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → ∃![ Y ∈ D ⦅ y ⦆ ] Σ[ F ∈ D [ f , X , Y ]ᴰ ] isCocartesian' f X Y F
+
+  module _ {A : Type ℓA} {B : Type ℓB} where
+    postulate
+      isContrInvariant : (e : A ≃ B) → isContr A → isContr B
+
+  module _ {A : Type ℓA} {B : A → Type ℓB} where
+    postulate
+      isContrCancelRight : isContr A → isContr (Σ A B) → (a : A) → isContr (B a)
+      isContrCancelLeft : (a : A) → isContr (B a) → isContr (Σ A B) → isContr A
+      isContrCompose : isContr A → (a : A) → isContr (B a) → isContr (Σ A B)
+
+  iso→isCocartesian' : {x y : ob C} {f : C [ x , y ]} {f-inv : CatIsIso f} {X : D ⦅ x ⦆} {Y : D ⦅ y ⦆} {F : D [ f , X , Y ]ᴰ} (F-inv : dispCatIsIso f-inv F) → isCocartesian' f X Y F
+  iso→isCocartesian' {x} {y} {f} {f-inv} {X} {Y} {F} F-inv {z} {g} {h} p {Z} H = isContrCancelRight
+    {A = Σ[ g ∈ C [ y , z ] ] f ⋆⟨ C ⟩ g ≡ h}
+    {B = λ {(g , p) → Σ[ G ∈ D [ g , Y , Z ]ᴰ ] PathP (λ i → D [ p i , X , Z ]ᴰ) (F ⋆⟨ D ⟩ᴰ G) H} }
+    (iso→precompEquiv {C = C} f-inv .equiv-proof _)
+    (isContrInvariant {A = Σ[ gG ∈ totalCat D [ (y , Y) , (z , Z) ] ] (f , F) ⋆⟨ totalCat D ⟩ gG ≡ (h , H)} (isoToEquiv (iso _ (λ { ((g , p) , (G , P)) → (((g , G)) , (λ i → (p i , P i)))}) (λ _ → refl) (λ _ → refl))) ((iso→precompEquiv {C = totalCat D} (equivFun u (f-inv , F-inv)) .equiv-proof _)))
+    (g , (λ i → p i))
