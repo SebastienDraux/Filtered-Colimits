@@ -89,8 +89,8 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
       eq = 
         F ⟪ id E ⟫                               ≡⟨ F-id F ⟩
         id C                                     ≡⟨ sym (retMorP C p) ⟩
-        morP C p ⋆⟨ C ⟩ invP C p                 ≡⟨ cong (λ f → f ⋆⟨ C ⟩ invP C p) (sym (⋆IdR C (morP C p))) ⟩
-        (morP C p ⋆⟨ C ⟩ id C) ⋆⟨ C ⟩ invP C p   ∎ 
+        morP C p ⋆⟨ C ⟩ invP C p                  ≡⟨ cong (λ f → f ⋆⟨ C ⟩ invP C p) (sym (⋆IdR C (morP C p))) ⟩
+        (morP C p ⋆⟨ C ⟩ id C) ⋆⟨ C ⟩ invP C p    ∎ 
     Σ→disp (E , F) .dC-⋆ {x} {y} {z} {X , px} {Y , py} {Z , pz} {g} {h} (G , qG) (H , qH) = (G ⋆⟨ E ⟩ H) , eq
       where
       eq : F ⟪ G ⋆⟨ E ⟩ H ⟫ ≡ (morP C px ⋆⟨ C ⟩ (g ⋆⟨ C ⟩ h)) ⋆⟨ C ⟩ invP C pz

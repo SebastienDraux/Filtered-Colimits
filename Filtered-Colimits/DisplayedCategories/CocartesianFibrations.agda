@@ -194,7 +194,7 @@ module _ {ℓD ℓD' : Level}
         ie' : G ⟪ g ⟫ ⟅ b ⟆ ≤[ G ⟅ _ ⟆ ] c
         ie' = 
           G ⟪ g ⟫ ⟅ G ⟪ f ⟫ ⟅ a ⟆ ⟆      ≤[ G ⟅ _ ⟆ ]⟨ ≡→≤ (G ⟅ _ ⟆) (cong (λ H → H ⟅ a ⟆) (sym (F-seq G _ _))) ⟩
-          G ⟪ f ⋆⟨ C ⟩ g ⟫ ⟅ a ⟆         ≤[ G ⟅ _ ⟆ ]⟨ ≡→≤ (G ⟅ _ ⟆) (cong (λ f → G ⟪ f ⟫ ⟅ a ⟆) p) ⟩
+          G ⟪ f ⋆⟨ C ⟩ g ⟫ ⟅ a ⟆          ≤[ G ⟅ _ ⟆ ]⟨ ≡→≤ (G ⟅ _ ⟆) (cong (λ f → G ⟪ f ⟫ ⟅ a ⟆) p) ⟩
           G ⟪ h ⟫ ⟅ a ⟆                  ≤[ G ⟅ _ ⟆ ]⟨ ie ⟩
           c                               [ G ⟅ _ ⟆ ]□
        

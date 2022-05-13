@@ -14,9 +14,7 @@ open import Cubical.Categories.Instances.Sets
 open import Cubical.Categories.Morphism
 
 open import Filtered-Colimits.General.Lemma
-open import Filtered-Colimits.General.Poset
 open import Filtered-Colimits.Category.Functors
-open import Filtered-Colimits.Category.PosetCat
 open import Filtered-Colimits.DisplayedCategories.DisplayedCategories
 open import Filtered-Colimits.DisplayedCategories.IsoDispCat
 open import Filtered-Colimits.DisplayedCategories.Functors
@@ -54,7 +52,6 @@ module _ (C : Category ℓC ℓC')
   leftFibrUnivDispPreorderCat .⋆IdR {D , _} {D' , _} = ⋆IdR (dispPreorderCat C ℓD ℓD') {x = D} {y = D'}
   leftFibrUnivDispPreorderCat .⋆Assoc {D , _} {D' , _} {D'' , _} {D''' , _} = ⋆Assoc (dispPreorderCat C ℓD ℓD') {x = D} {y = D'} {z = D''} {w = D'''}
   leftFibrUnivDispPreorderCat .isSetHom {D , _} {D' , _} = isSetHom (dispPreorderCat C ℓD ℓD') {x = D} {y = D'}
-
 
 module _ {ℓD : Level}
          {C : Category ℓC ℓC'} where
@@ -134,17 +131,8 @@ module _ {ℓD : Level}
     𝑭 : Functor (FUNCTOR C (SET ℓD)) (leftFibrUnivDispPreorderCat C ℓD ℓD)
     𝑭 .F-ob G = D-preorder G , (isUnivDG G) , isLeftFibDG G
     𝑭 .F-hom = F
-    𝑭 .F-id {G} = eq-dF→≡ eq
-      where
-      eq : eq-dF (F (idTrans G)) dC-idFunct
-      eq .eq-dF-ob a = refl
-      eq .eq-dF-hom p = snd (G ⟅ _ ⟆) _ _ _ _
-    𝑭 .F-seq {G} {G'} {G''} α β = eq-dF→≡ eq
-      where
-      eq : eq-dF (F (α ●ᵛ β)) ((F α) ⋆ᵈᶠ (F β))
-      eq .eq-dF-ob a = refl
-      eq .eq-dF-hom p = snd (G'' ⟅ _ ⟆) _ _ _ _
-
+    𝑭 .F-id {G} = eq-dF→≡ (record { eq-dF-ob = λ _ → refl ; eq-dF-hom = λ _ → snd (G ⟅ _ ⟆) _ _ _ _ })
+    𝑭 .F-seq {G} {G'} {G''} α β = eq-dF→≡ (record { eq-dF-ob = λ _ → refl ; eq-dF-hom = λ _ → snd (G'' ⟅ _ ⟆) _ _ _ _ })
 
   functToSET→dispCat→functToSet : NatIso (dispCat→functToSET ∘F functToSET→dispCat) 𝟙⟨ FUNCTOR C (SET ℓD) ⟩
   functToSET→dispCat→functToSet = α
@@ -184,12 +172,8 @@ module _ {ℓD : Level}
     
     β : NatTrans (functToSET→dispCat ∘F dispCat→functToSET) 𝟙⟨ leftFibrUnivDispPreorderCat C ℓD ℓD ⟩
     β .N-ob = F
-    β .N-hom {D , isUnivD , isLeftFibD} {D' , isUnivD' , isLeftFibD'} H = eq-dF→≡ eq
-      where
-      eq : eq-dF (functToSET→dispCat ⟪ F-hom dispCat→functToSET {x = D , isUnivD , isLeftFibD} {y = D' , isUnivD' , isLeftFibD'} H ⟫ ⋆ᵈᶠ F (D' , isUnivD' , isLeftFibD')) (F (D , isUnivD , isLeftFibD) ⋆ᵈᶠ H)
-      eq .eq-dF-ob a = refl
-      eq .eq-dF-hom p = isPropMor (is-disp-preorder D') _ _ _ _ _
-
+    β .N-hom {D , isUnivD , isLeftFibD} {D' , isUnivD' , isLeftFibD'} H = eq-dF→≡ (record { eq-dF-ob = λ _ → refl ; eq-dF-hom = λ p → isPropMor (is-disp-preorder D') _ _ _ _ _ })
+    
     isIsoβ : (D : ob (leftFibrUnivDispPreorderCat C ℓD ℓD)) → isIso (leftFibrUnivDispPreorderCat C ℓD ℓD) {x = functToSET→dispCat ⟅ dispCat→functToSET ⟅ D ⟆ ⟆} {y = D} (F D)
     isIsoβ (D , isUnivD , isLeftFibD) .inv = G (D , isUnivD , isLeftFibD)
     isIsoβ (D , isUnivD , isLeftFibD) .sec = eq-dF→≡ eq
