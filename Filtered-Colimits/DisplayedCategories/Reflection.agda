@@ -30,7 +30,7 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
 
   private
     ℓ = ℓ-max (ℓ-max ℓC ℓD) (ℓ-max ℓC' ℓD')
-         
+
   data reflection-ob : (x : ob C) → Type ℓ where
     fromD-ob : {x : ob C} → (X : D ⦅ x ⦆) → reflection-ob x
     leftFib-ob : {x y : ob C} → (f : C [ x , y ]) → (X : reflection-ob x) → reflection-ob y
@@ -41,7 +41,7 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
  --   test2 : {x y : ob C} → (f : C [ x , y ]) → (X : reflection-ob x)  → coherence-id (leftFib-ob f X) ≡ sym (coherence-seq f (id C) X) ∙ cong (λ f → leftFib-ob f X) (⋆IdR C _)
    -- is-set : {x : ob C} → isSet (reflection-ob x)
 
-      
+
   data reflection-hom : {x y : ob C} → (f : C [ x , y ]) → (X : reflection-ob x) → (Y : reflection-ob y) → Type ℓ where
     fromD-hom : {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → (Y : D ⦅ y ⦆) → (F : D [ f , X , Y ]ᴰ) → reflection-hom f (fromD-ob X) (fromD-ob Y)
     leftFib-hom : {x y : ob C} → (f : C [ x , y ]) → (X : reflection-ob x) →  reflection-hom f X (leftFib-ob f X)
@@ -61,7 +61,7 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
   unicity-ob f .(fromD-ob X) .(fromD-ob Y) (fromD-hom .f X Y F) = coherence-fromD f X Y F
   unicity-ob f X .(leftFib-ob f X) (leftFib-hom .f .X) = refl
   unicity-ob .(id C) .(coherence-fromD f X Y F i) .(coherence-fromD f X Y F i) (coherence-id-hom f X Y F i) = {!!}
-  
+
 --  coherence-id' : {x : ob C} → (X : reflection-ob x) → leftFib-ob (id C) X ≡ X
 --  coherence-id' (fromD X) = coherence-fromD (id C) X X (dC-id D)
 --  coherence-id' (leftFib-ob f X) = sym (coherence-seq f (id C) X) ∙ cong (λ f → leftFib-ob f X) (⋆IdR C _)
@@ -107,7 +107,7 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
 ----  reflection .dC-id {X = coherence-id (coherence-id X i) j} = {!!}
 --  reflection .dC-id {X = coherence-id (coherence-id-fromD X i j) k} = {!!}
   reflection .dC-id {X = X} = subst (λ Y → reflection-hom (id C) X Y) (coherence-id X) (leftFib-hom (id C) X)
-  reflection .dC-⋆ {X = X} {Y} {Z} {f} {g} F G = subst (reflection-hom (f ⋆⟨ C ⟩ g) X) p (leftFib-hom (f ⋆⟨ C ⟩ g) X) 
+  reflection .dC-⋆ {X = X} {Y} {Z} {f} {g} F G = subst (reflection-hom (f ⋆⟨ C ⟩ g) X) p (leftFib-hom (f ⋆⟨ C ⟩ g) X)
     where
     p : leftFib-ob (f ⋆⟨ C ⟩ g) X ≡ Z
     p = coherence-seq f g X ∙ cong (leftFib-ob g) (unicity-ob f X Y F) ∙ (unicity-ob g Y Z G)
@@ -133,13 +133,13 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
 
   private
     ℓ = ℓ-max (ℓ-max ℓC ℓD) (ℓ-max ℓC' ℓD')
-    
+
   mutual
     data reflection-ob' : (x : ob C) → Type ℓ where
       fromD-ob' : {x : ob C} → (X : D ⦅ x ⦆) → reflection-ob' x
       leftFib-ob' : {x y : ob C} → (f : C [ x , y ]) → (X : reflection-ob' x) → reflection-ob' y
       unicity-ob' :  {x y : ob C} → (f : C [ x , y ]) → (X : reflection-ob' x) → (Y : reflection-ob' y) → (F : reflection-hom' f X Y) → leftFib-ob' f X ≡ Y
-       
+
     data reflection-hom' : {x y : ob C} → (f : C [ x , y ]) → (X : reflection-ob' x) → (Y : reflection-ob' y) → Type ℓ where
       fromD-hom' : {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → (Y : D ⦅ y ⦆) → (F : D [ f , X , Y ]ᴰ) → reflection-hom' f (fromD-ob' X) (fromD-ob' Y)
       leftFib-hom' : {x y : ob C} → (f : C [ x , y ]) → (X : reflection-ob' x) →  reflection-hom' f X (leftFib-ob' f X)
@@ -148,7 +148,7 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
       seq-hom' : {x y z : ob C} → (f : C [ x , y ]) → (g : C [ y , z ]) → (X : reflection-ob' x) → (Y : reflection-ob' y) → (Z : reflection-ob' z)
                  → reflection-hom' f X Y → reflection-hom' g Y Z → reflection-hom' (f ⋆⟨ C ⟩ g) X Z
       fromD-seq' : {x y z : ob C} → (f : C [ x , y ]) → (g : C [ y , z ]) → (X : D ⦅ x ⦆) → (Y : D ⦅ y ⦆) → (Z : D ⦅ z ⦆) → (F : D [ f , X , Y ]ᴰ) → (G : D [ g , Y , Z ]ᴰ) →
-                   fromD-hom' (f ⋆⟨ C ⟩ g) X Z (F ⋆⟨ D ⟩ᴰ G) ≡ seq-hom' f g (fromD-ob' X) (fromD-ob' Y) (fromD-ob' Z) (fromD-hom' f X Y F) (fromD-hom' g Y Z G) 
+                   fromD-hom' (f ⋆⟨ C ⟩ g) X Z (F ⋆⟨ D ⟩ᴰ G) ≡ seq-hom' f g (fromD-ob' X) (fromD-ob' Y) (fromD-ob' Z) (fromD-hom' f X Y F) (fromD-hom' g Y Z G)
       id-hom' : {x : ob C} → (X : reflection-ob' x) → reflection-hom' (id C) X X
       fromD-id' : {x : ob C} → (X : D ⦅ x ⦆) → fromD-hom' (id C) X X (dC-id D) ≡ id-hom' (fromD-ob' X)
       ⋆-IdL-hom' : {x y : ob C} → (f : C [ x , y ]) → (X : reflection-ob' x) → (Y : reflection-ob' y) → (F : reflection-hom' f X Y) →
@@ -225,86 +225,117 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
       mutual
         uniqueFact-ob : {x : ob C} → (X : reflection' ⦅ x ⦆) → 𝑮 ⟅ X ⟆ᴰ ≡ factReflection ⟅ X ⟆ᴰ
         uniqueFact-ob (fromD-ob' X) = cong (_⟅ X ⟆ᴰ) factG
-        uniqueFact-ob (leftFib-ob' f X) = p ∙ q ∙ r
+        uniqueFact-ob (leftFib-ob' f X) i = hcomp {φ = i ∨ ~ i} aux (leftFib-getOb E isLeftFibE f (uniqueFact-ob X i))
           where
-          p : 𝑮 ⟅ leftFib-ob' f X ⟆ᴰ ≡ leftFib-getOb E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ)
-          p = sym (leftFib-unicityOb E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ) (𝑮 ⟅ leftFib-ob' f X ⟆ᴰ , 𝑮 ⟪ leftFib-hom' f X ⟫ᴰ))
+          p : leftFib-getOb E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ) ≡ 𝑮 ⟅ leftFib-ob' f X ⟆ᴰ
+          p = leftFib-unicityOb E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ) (𝑮 ⟅ leftFib-ob' f X ⟆ᴰ , 𝑮 ⟪ leftFib-hom' f X ⟫ᴰ)
 
           q : leftFib-getOb E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ) ≡ leftFib-getOb E isLeftFibE f (factReflection ⟅ X ⟆ᴰ)
           q = cong (leftFib-getOb E isLeftFibE f) (uniqueFact-ob X)
-          
+
           r : leftFib-getOb E isLeftFibE f (factReflection ⟅ X ⟆ᴰ) ≡ factReflection ⟅ leftFib-ob' f X ⟆ᴰ
           r = leftFib-unicityOb E isLeftFibE f (factReflection ⟅ X ⟆ᴰ) (factReflection ⟅ leftFib-ob' f X ⟆ᴰ , factReflection ⟪ leftFib-hom' f X ⟫ᴰ)
-      
-        uniqueFact-ob (unicity-ob' f X Y F i) j = test4 j i
-          where
-          X' = leftFib-ob' f X
-          p = sym (leftFib-unicityOb E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ) (𝑮 ⟅ leftFib-ob' f X ⟆ᴰ , 𝑮 ⟪ leftFib-hom' f X ⟫ᴰ)) ∙
-              cong (leftFib-getOb E isLeftFibE f) (uniqueFact-ob X) ∙
-              leftFib-unicityOb E isLeftFibE f (factReflection ⟅ X ⟆ᴰ) (factReflection ⟅ leftFib-ob' f X ⟆ᴰ , factReflection ⟪ leftFib-hom' f X ⟫ᴰ)
-         -- p = uniqueFact-ob (leftFib-ob' f X)
-         -- p = uniqueFact-ob X'
-          p' = uniqueFact-ob Y
-          q = cong (λ X → 𝑮 ⟅ X ⟆ᴰ) (unicity-ob' f X Y F)
-          q' = cong (λ X → factReflection ⟅ X ⟆ᴰ) (unicity-ob' f X Y F)
-          
-          P = dC-pathToIso reflection' (unicity-ob' f X Y F)
-          GP : dispCatIso E (𝑮 ⟅ X' ⟆ᴰ) (𝑮 ⟅ Y ⟆ᴰ) idCatIso
-          GP = dC-pathToIso E q
-          FP : dispCatIso E (factReflection ⟅ X' ⟆ᴰ) (factReflection ⟅ Y ⟆ᴰ) idCatIso 
-          FP = dC-pathToIso E q'
-          
-          test : PathP (λ i → E [ id C , p i , p' i ]ᴰ) (𝑮 ⟪ dC-mor P ⟫ᴰ) (factReflection ⟪ dC-mor P ⟫ᴰ)
-          test = uniqueFact-hom (dC-mor P)
 
-          test' : PathP (λ i → E [ id C , p i , p' i ]ᴰ) (dC-mor GP) (dC-mor FP)
-          test' = subst2 (PathP (λ i → E [ id C , p i , p' i ]ᴰ)) {!!} {!!} test
+          aux : I → Partial (i ∨ ~ i) (dC-ob E _)
+          aux j (i = i0) = p j
+          aux j (i = i1) = r j
 
-          test2 : PathP (λ i → dispCatIso E (p i) (p' i) idCatIso) GP FP
-          test2 = makeDispCatIsoPath E p p' GP FP test'
+        -- uniqueFact-ob (unicity-ob' f X Y F i) j = test4 j i
+        --   where
+        --   X' = leftFib-ob' f X
+        --   p = sym (leftFib-unicityOb E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ) (𝑮 ⟅ leftFib-ob' f X ⟆ᴰ , 𝑮 ⟪ leftFib-hom' f X ⟫ᴰ)) ∙
+        --       cong (leftFib-getOb E isLeftFibE f) (uniqueFact-ob X) ∙
+        --       leftFib-unicityOb E isLeftFibE f (factReflection ⟅ X ⟆ᴰ) (factReflection ⟅ leftFib-ob' f X ⟆ᴰ , factReflection ⟪ leftFib-hom' f X ⟫ᴰ)
+        --  -- p = uniqueFact-ob (leftFib-ob' f X)
+        --  -- p = uniqueFact-ob X'
+        --   p' = uniqueFact-ob Y
+        --   q = cong (λ X → 𝑮 ⟅ X ⟆ᴰ) (unicity-ob' f X Y F)
+        --   q' = cong (λ X → factReflection ⟅ X ⟆ᴰ) (unicity-ob' f X Y F)
 
-          test3 : PathP (λ i → p i ≡ p' i) (equivFun (invEquiv (dC-univEquiv E isUnivE _ _)) GP) (equivFun (invEquiv (dC-univEquiv E isUnivE _ _)) FP)
-          test3 = equivFun (congPathEquiv (λ _ → invEquiv (dC-univEquiv E isUnivE _ _))) test2
-          
-          test4 : PathP (λ i → uniqueFact-ob X' i ≡ uniqueFact-ob Y i) q q'
-          test4 = subst2 (PathP (λ i → p i ≡ p' i)) (retEq (dC-univEquiv E isUnivE _ _) q) (retEq (dC-univEquiv E isUnivE _ _) q')
-                         (equivFun (congPathEquiv (λ _ → invEquiv (dC-univEquiv E isUnivE _ _))) test2)
+        --   P = dC-pathToIso reflection' (unicity-ob' f X Y F)
+        --   GP : dispCatIso E (𝑮 ⟅ X' ⟆ᴰ) (𝑮 ⟅ Y ⟆ᴰ) idCatIso
+        --   GP = dC-pathToIso E q
+        --   FP : dispCatIso E (factReflection ⟅ X' ⟆ᴰ) (factReflection ⟅ Y ⟆ᴰ) idCatIso
+        --   FP = dC-pathToIso E q'
+
+        --   test : PathP (λ i → E [ id C , p i , p' i ]ᴰ) (𝑮 ⟪ dC-mor P ⟫ᴰ) (factReflection ⟪ dC-mor P ⟫ᴰ)
+        --   test = uniqueFact-hom (dC-mor P)
+
+        --   test' : PathP (λ i → E [ id C , p i , p' i ]ᴰ) (dC-mor GP) (dC-mor FP)
+        --   test' = subst2 (PathP (λ i → E [ id C , p i , p' i ]ᴰ)) {!!} {!!} test
+
+        --   test2 : PathP (λ i → dispCatIso E (p i) (p' i) idCatIso) GP FP
+        --   test2 = makeDispCatIsoPath E p p' GP FP test'
+
+        --   test3 : PathP (λ i → p i ≡ p' i) (equivFun (invEquiv (dC-univEquiv E isUnivE _ _)) GP) (equivFun (invEquiv (dC-univEquiv E isUnivE _ _)) FP)
+        --   test3 = equivFun (congPathEquiv (λ _ → invEquiv (dC-univEquiv E isUnivE _ _))) test2
+
+        --   test4 : PathP (λ i → uniqueFact-ob X' i ≡ uniqueFact-ob Y i) q q'
+        --   test4 = subst2 (PathP (λ i → p i ≡ p' i)) (retEq (dC-univEquiv E isUnivE _ _) q) (retEq (dC-univEquiv E isUnivE _ _) q')
+        --                  (equivFun (congPathEquiv (λ _ → invEquiv (dC-univEquiv E isUnivE _ _))) test2)
 
         uniqueFact-hom : {x y : ob C} → {f : C [ x , y ]} → {X : reflection' ⦅ x ⦆} → {Y : reflection' ⦅ y ⦆} → (F : reflection' [ f , X , Y ]ᴰ) →
-                         PathP (λ i → E [ f , uniqueFact-ob X i , uniqueFact-ob Y i ]ᴰ) (𝑮 ⟪ F ⟫ᴰ) (factReflection ⟪ F ⟫ᴰ)                   
+                         PathP (λ i → E [ f , uniqueFact-ob X i , uniqueFact-ob Y i ]ᴰ) (𝑮 ⟪ F ⟫ᴰ) (factReflection ⟪ F ⟫ᴰ)
         uniqueFact-hom {X = .(fromD-ob' X)} {.(fromD-ob' Y)} (fromD-hom' _ X Y F) = cong (_⟪ F ⟫ᴰ) factG
-        uniqueFact-hom {f = f} {X = X} {.(leftFib-ob' f X)} (leftFib-hom' _ .X) i = {!!}
+        uniqueFact-hom {x} {y} {f = f} {X = X} {.(leftFib-ob' f X)} (leftFib-hom' _ .X) i = comp
+          (λ j → E [ f , uniqueFact-ob X i , hfill {φ = i ∨ ~ i} aux (inS (leftFib-getOb E isLeftFibE f (uniqueFact-ob X i))) j ]ᴰ)
+          {φ = i ∨ ~ i}
+          (λ j → λ {
+            (i = i0) → leftFib-unicityHom E isLeftFibE f (𝑮₀ ⟅ X ⟆ᴰ) ((𝑮₀ ⟅ Y ⟆ᴰ) , (𝑮₀ ⟪ leftFib-hom' f X ⟫ᴰ)) j;
+            (i = i1) → leftFib-unicityHom E isLeftFibE f (𝑮₁ ⟅ X ⟆ᴰ) ((𝑮₁ ⟅ Y ⟆ᴰ) , (𝑮₁ ⟪ leftFib-hom' f X ⟫ᴰ)) j}
+          )
+          ((leftFib-getHom E isLeftFibE f (uniqueFact-ob X i)))
           where
           Y = leftFib-ob' f X
-        
-          p = sym (leftFib-unicityOb E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ) (𝑮 ⟅ leftFib-ob' f X ⟆ᴰ , 𝑮 ⟪ leftFib-hom' f X ⟫ᴰ))
+
+          𝑮₀ = 𝑮
+          𝑮₁ = factReflection
+
+          p : leftFib-getOb E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ) ≡ 𝑮 ⟅ leftFib-ob' f X ⟆ᴰ
+          p = leftFib-unicityOb E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ) (𝑮 ⟅ leftFib-ob' f X ⟆ᴰ , 𝑮 ⟪ leftFib-hom' f X ⟫ᴰ)
+
+          q : leftFib-getOb E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ) ≡ leftFib-getOb E isLeftFibE f (factReflection ⟅ X ⟆ᴰ)
           q = cong (leftFib-getOb E isLeftFibE f) (uniqueFact-ob X)
+
+          r : leftFib-getOb E isLeftFibE f (factReflection ⟅ X ⟆ᴰ) ≡ factReflection ⟅ leftFib-ob' f X ⟆ᴰ
           r = leftFib-unicityOb E isLeftFibE f (factReflection ⟅ X ⟆ᴰ) (factReflection ⟅ leftFib-ob' f X ⟆ᴰ , factReflection ⟪ leftFib-hom' f X ⟫ᴰ)
 
-          test : subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) (p ∙ q ∙ r) (𝑮 ⟪ leftFib-hom' f X ⟫ᴰ) ≡ {!!}
-          test = 
-            subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) (p ∙ q ∙ r) (𝑮 ⟪ leftFib-hom' f X ⟫ᴰ) ≡⟨ {!!} ⟩
-            subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) (q ∙ r) (subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) p (𝑮 ⟪ leftFib-hom' f X ⟫ᴰ)) ≡⟨ {!!} ⟩
-            subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) (q ∙ r) (leftFib-getHom E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ)) ≡⟨ {!!} ⟩
-            subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) r (subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) q (leftFib-getHom E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ))) ≡⟨ {!!} ⟩
-            subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) r (subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , leftFib-getOb E isLeftFibE f Y ]ᴰ) (uniqueFact-ob X) (leftFib-getHom E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ))) ≡⟨ {!!} ⟩
-            subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) r (subst (λ X' → E [ f , X' , leftFib-getOb E isLeftFibE f (factorisation-ob X) ]ᴰ) (sym (uniqueFact-ob X))
-                                                          (leftFib-getHom E isLeftFibE f (factReflection ⟅ X ⟆ᴰ))) ≡⟨ {!!} ⟩
-          
-            subst (λ X' → E [ f , X' , leftFib-getOb E isLeftFibE f (factorisation-ob X) ]ᴰ) (sym (uniqueFact-ob X)) (subst (λ Y → E [ f , factorisation-ob X , Y ]ᴰ) r
-                                                                                                                           (leftFib-getHom E isLeftFibE f (factReflection ⟅ X ⟆ᴰ))) ≡⟨ {!!} ⟩
-            subst (λ X' → E [ f , X' , leftFib-getOb E isLeftFibE f (factorisation-ob X) ]ᴰ) (sym (uniqueFact-ob X)) (factReflection ⟪ leftFib-hom' f X ⟫ᴰ) ≡⟨ {!!} ⟩                                                                                                                  
-            {!!} ∎
-        
-          eq : subst2 (λ X Y → E [ f , X , Y ]ᴰ) (uniqueFact-ob X) (p ∙ q ∙ r) (𝑮 ⟪ leftFib-hom' f X ⟫ᴰ) ≡ factReflection ⟪ leftFib-hom' f X ⟫ᴰ
-          eq = 
-            subst2 (λ X Y → E [ f , X , Y ]ᴰ) (uniqueFact-ob X) (p ∙ q ∙ r) (𝑮 ⟪ leftFib-hom' f X ⟫ᴰ)
-              ≡⟨ {!!} ⟩
-            subst (λ X' → E [ f , X' , leftFib-getOb E isLeftFibE f (factorisation-ob X) ]ᴰ) (uniqueFact-ob X) (subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) (p ∙ q ∙ r) (𝑮 ⟪ leftFib-hom' f X ⟫ᴰ))
-              ≡⟨ {!!} ⟩
-            {!!} ≡⟨ {!!} ⟩
-            factReflection ⟪ leftFib-hom' f X ⟫ᴰ ∎
-          
+          aux : I → Partial (i ∨ ~ i) (dC-ob E _)
+          aux j (i = i0) = p j
+          aux j (i = i1) = r j
+
+          z : dC-ob E _
+          z = leftFib-getOb E isLeftFibE f (uniqueFact-ob X i)
+
+          α : dC-ob E _
+          α = hcomp {A = dC-ob E y} {φ = i ∨ ~ i} aux z
+
+          β : {!!}
+          β = hfill {A = dC-ob E y} {φ = i ∨ ~ i} (λ j → λ {(i = i0) → p j; (i = i1) → r j}) (inS z)
+        --   test : subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) (p ∙ q ∙ r) (𝑮 ⟪ leftFib-hom' f X ⟫ᴰ) ≡ {!!}
+        --   test =
+        --     subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) (p ∙ q ∙ r) (𝑮 ⟪ leftFib-hom' f X ⟫ᴰ) ≡⟨ {!!} ⟩
+        --     subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) (q ∙ r) (subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) p (𝑮 ⟪ leftFib-hom' f X ⟫ᴰ)) ≡⟨ {!!} ⟩
+        --     subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) (q ∙ r) (leftFib-getHom E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ)) ≡⟨ {!!} ⟩
+        --     subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) r (subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) q (leftFib-getHom E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ))) ≡⟨ {!!} ⟩
+        --     subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) r (subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , leftFib-getOb E isLeftFibE f Y ]ᴰ) (uniqueFact-ob X) (leftFib-getHom E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ))) ≡⟨ {!!} ⟩
+        --     subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) r (subst (λ X' → E [ f , X' , leftFib-getOb E isLeftFibE f (factorisation-ob X) ]ᴰ) (sym (uniqueFact-ob X))
+        --                                                   (leftFib-getHom E isLeftFibE f (factReflection ⟅ X ⟆ᴰ))) ≡⟨ {!!} ⟩
+
+        --     subst (λ X' → E [ f , X' , leftFib-getOb E isLeftFibE f (factorisation-ob X) ]ᴰ) (sym (uniqueFact-ob X)) (subst (λ Y → E [ f , factorisation-ob X , Y ]ᴰ) r
+        --                                                                                                                    (leftFib-getHom E isLeftFibE f (factReflection ⟅ X ⟆ᴰ))) ≡⟨ {!!} ⟩
+        --     subst (λ X' → E [ f , X' , leftFib-getOb E isLeftFibE f (factorisation-ob X) ]ᴰ) (sym (uniqueFact-ob X)) (factReflection ⟪ leftFib-hom' f X ⟫ᴰ) ≡⟨ {!!} ⟩
+        --     {!!} ∎
+
+        --   eq : subst2 (λ X Y → E [ f , X , Y ]ᴰ) (uniqueFact-ob X) (p ∙ q ∙ r) (𝑮 ⟪ leftFib-hom' f X ⟫ᴰ) ≡ factReflection ⟪ leftFib-hom' f X ⟫ᴰ
+        --   eq =
+        --     subst2 (λ X Y → E [ f , X , Y ]ᴰ) (uniqueFact-ob X) (p ∙ q ∙ r) (𝑮 ⟪ leftFib-hom' f X ⟫ᴰ)
+        --       ≡⟨ {!!} ⟩
+        --     subst (λ X' → E [ f , X' , leftFib-getOb E isLeftFibE f (factorisation-ob X) ]ᴰ) (uniqueFact-ob X) (subst (λ Y → E [ f , 𝑮 ⟅ X ⟆ᴰ , Y ]ᴰ) (p ∙ q ∙ r) (𝑮 ⟪ leftFib-hom' f X ⟫ᴰ))
+        --       ≡⟨ {!!} ⟩
+        --     {!!} ≡⟨ {!!} ⟩
+        --     factReflection ⟪ leftFib-hom' f X ⟫ᴰ ∎
+
 
         uniqueFact-hom {X = X} {.(unicity-ob' f X Y F i)} (unicity-hom' f X Y F i) j = {!!} --isSet→SqureP and same for other cases
         uniqueFact-hom {X = X} {Y} (seq-hom' f g .X Y₁ .Y F F₁) j = {!!}
@@ -315,5 +346,3 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
         uniqueFact-hom {X = X} {Y} (⋆-IdR-hom' f X Y F i) = {!!}
         uniqueFact-hom {X = .W} {.Z} (⋆Assoc-hom' f g h W X Y Z F F₁ F₂ i) = {!!}
         uniqueFact-hom {X = X} {Y} (is-set-hom' f X Y F F₁ x y i i₁) = {!!}
-
-    
