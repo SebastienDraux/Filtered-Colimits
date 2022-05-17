@@ -190,7 +190,7 @@ module _ {C : Category ℓC ℓC'}
       γ ⟦ x ⟧                                                        ∎
 
     pathToIso≡α : pathToIso F≡G ≡ α
-    pathToIso≡α = makeIsoPath (pathToIso F≡G) α (makeNatTransPath (funExt morPathToIso≡γ))
+    pathToIso≡α = makeIso≡ (pathToIso F≡G) α (makeNatTransPath (funExt morPathToIso≡γ))
 
     unicityF≡G : (pair : Σ[ F≡G' ∈ F ≡ G ] pathToIso F≡G' ≡ α) → (F≡G , pathToIso≡α) ≡ pair
     unicityF≡G (F≡G' , p) = Σ≡Prop (λ F≡G' → isSet-CatIso F G (pathToIso F≡G') α) (equivFun (invEquiv (≡of≡Funct F≡G F≡G')) eq)

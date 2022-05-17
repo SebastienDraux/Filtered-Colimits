@@ -24,7 +24,6 @@ open Category
 open dispCat
 open dispCat-Funct
 open dispPreorder
-open eq-dF
 open isDispPreorder
 open Functor
 open NatTrans
@@ -97,9 +96,9 @@ module _ {ℓD : Level}
     D G .dC-hom f a b = (G ⟪ f ⟫) a ≡ b
     D G .dC-id = funExt⁻ (F-id G) _
     D G .dC-⋆ {f = f} {g} p q = funExt⁻ (F-seq G _ _) _ ∙ cong (G ⟪ g ⟫) p ∙ q
-    D G .dC-⋆IdL {y = y} p = snd (G ⟅ y ⟆) _ _ _ _
-    D G .dC-⋆IdR  {y = y} p = snd (G ⟅ y ⟆) _ _ _ _
-    D G .dC-⋆Assoc {z = z} p q r = snd (G ⟅ z ⟆) _ _ _ _
+    D G .dC-⋆IdL {y = y} p = isProp→PathP (λ _ → snd (G ⟅ y ⟆) _ _) _ _ --snd (G ⟅ y ⟆) _ _ _ _
+    D G .dC-⋆IdR  {y = y} p = isProp→PathP (λ _ → snd (G ⟅ y ⟆) _ _) _ _ --snd (G ⟅ y ⟆) _ _ _ _
+    D G .dC-⋆Assoc {z = z} p q r = isProp→PathP (λ _ → snd (G ⟅ z ⟆) _ _) _ _ --snd (G ⟅ z ⟆) _ _ _ _
     D G .dC-homSet {y = y} f a b = isProp→isSet (snd (G ⟅ y ⟆) _ _)
 
     isdispPreorderDG : (G : Functor C (SET ℓD)) → isDispPreorder (D G)
@@ -114,8 +113,8 @@ module _ {ℓD : Level}
     isLeftFibDG G f a = isContrSingl ((G ⟪ f ⟫) a)
 
     isUnivDG : (G : Functor C (SET ℓD)) → isUnivalent-dC (D G)
-    isUnivDG G a b .equiv-proof f = (a≡b , makeDispCatIsoPath (D G) (dC-pathToIso (D G) a≡b) f (snd (G ⟅ _ ⟆) _ _ _ _)) ,
-                                    λ {(g , p) → Σ≡Prop (λ p → isSetDispCatIso (D G) idCatIso _ _ _ _) (snd (G ⟅ _ ⟆) _ _ _ _)}
+    isUnivDG G a b .equiv-proof f = (a≡b , makeDispCatIso≡ (D G) (dC-pathToIso (D G) a≡b) f (snd (G ⟅ _ ⟆) _ _ _ _)) ,
+                                    λ {(g , p) → Σ≡Prop (λ p → isSetDispCatIso (D G) _ _) (snd (G ⟅ _ ⟆) _ _ _ _)}
       where
       a≡b = sym (funExt⁻ (F-id G) a) ∙ dC-mor f
 
@@ -131,8 +130,8 @@ module _ {ℓD : Level}
     𝑭 : Functor (FUNCTOR C (SET ℓD)) (leftFibrUnivDispPreorderCat C ℓD ℓD)
     𝑭 .F-ob G = D-preorder G , (isUnivDG G) , isLeftFibDG G
     𝑭 .F-hom = F
-    𝑭 .F-id {G} = eq-dF→≡ (record { eq-dF-ob = λ _ → refl ; eq-dF-hom = λ _ → snd (G ⟅ _ ⟆) _ _ _ _ })
-    𝑭 .F-seq {G} {G'} {G''} α β = eq-dF→≡ (record { eq-dF-ob = λ _ → refl ; eq-dF-hom = λ _ → snd (G'' ⟅ _ ⟆) _ _ _ _ })
+    𝑭 .F-id {G} = dispPreorderFunct≡ (D-preorder G) _ _ λ _ → refl
+    𝑭 .F-seq {z = G} α β = dispPreorderFunct≡ (D-preorder G) _ _ λ _ → refl
 
   functToSET→dispCat→functToSet : NatIso (dispCat→functToSET ∘F functToSET→dispCat) 𝟙⟨ FUNCTOR C (SET ℓD) ⟩
   functToSET→dispCat→functToSet = α
@@ -158,35 +157,29 @@ module _ {ℓD : Level}
   dispCat→functToSet→dispCat : NatIso (functToSET→dispCat ∘F dispCat→functToSET) 𝟙⟨ leftFibrUnivDispPreorderCat C ℓD ℓD ⟩
   dispCat→functToSet→dispCat = α
     where
-    F : (D : ob (leftFibrUnivDispPreorderCat C ℓD ℓD)) → dispCat-Funct (disp-cat (fst (functToSET→dispCat ⟅ dispCat→functToSET ⟅ D ⟆ ⟆))) (disp-cat (fst D))
+    U = functToSET→dispCat ∘F dispCat→functToSET
+    
+    F : (D : ob (leftFibrUnivDispPreorderCat C ℓD ℓD)) → dispCat-Funct (disp-cat (fst (U ⟅ D ⟆))) (disp-cat (fst D))
     F (D , isUnivD , isLeftFibD) .dF-ob a = a
     F (D , isUnivD , isLeftFibD) .dF-hom {f = f} {a} {b} p = subst (λ b → (disp-cat D) [ f , a , b ]ᴰ) p (leftFib-getHom (disp-cat D) isLeftFibD f a)
     F (D , isUnivD , isLeftFibD) .dF-id = isPropMor (is-disp-preorder D) _ _ _ _ _
     F (D , isUnivD , isLeftFibD) .dF-seq p q = isPropMor (is-disp-preorder D) _ _ _ _ _
 
-    G : (D : ob (leftFibrUnivDispPreorderCat C ℓD ℓD)) → dispCat-Funct (disp-cat (fst D)) (disp-cat (fst (functToSET→dispCat ⟅ dispCat→functToSET ⟅ D ⟆ ⟆)))
+    G : (D : ob (leftFibrUnivDispPreorderCat C ℓD ℓD)) → dispCat-Funct (disp-cat (fst D)) (disp-cat (fst (U ⟅ D ⟆)))
     G (D , isUnivD , isLeftFibD) .dF-ob a = a
     G (D , isUnivD , isLeftFibD) .dF-hom {f = f} {a} {b} u = leftFib-unicityOb (disp-cat D) isLeftFibD f a (b , u)
-    G (D , isUnivD , isLeftFibD) .dF-id = isPropMor (is-disp-preorder (fst (functToSET→dispCat ⟅ dispCat→functToSET ⟅ (D , isUnivD , isLeftFibD) ⟆ ⟆))) _ _ _ _ _
-    G (D , isUnivD , isLeftFibD) .dF-seq u v = isPropMor (is-disp-preorder (fst (functToSET→dispCat ⟅ dispCat→functToSET ⟅ (D , isUnivD , isLeftFibD) ⟆ ⟆))) _ _ _ _ _ 
+    G D .dF-id = isPropMor (is-disp-preorder (fst (U ⟅ D ⟆))) _ _ _ _ _
+    G D .dF-seq u v = isPropMor (is-disp-preorder (fst (U ⟅ D ⟆))) _ _ _ _ _ 
     
-    β : NatTrans (functToSET→dispCat ∘F dispCat→functToSET) 𝟙⟨ leftFibrUnivDispPreorderCat C ℓD ℓD ⟩
+    β : NatTrans U 𝟙⟨ leftFibrUnivDispPreorderCat C ℓD ℓD ⟩
     β .N-ob = F
-    β .N-hom {D , isUnivD , isLeftFibD} {D' , isUnivD' , isLeftFibD'} H = eq-dF→≡ (record { eq-dF-ob = λ _ → refl ; eq-dF-hom = λ p → isPropMor (is-disp-preorder D') _ _ _ _ _ })
+    β .N-hom {y = D' , isUnivD' , isLeftFibD'} H = dispPreorderFunct≡ D' _ _ λ _ → refl
     
-    isIsoβ : (D : ob (leftFibrUnivDispPreorderCat C ℓD ℓD)) → isIso (leftFibrUnivDispPreorderCat C ℓD ℓD) {x = functToSET→dispCat ⟅ dispCat→functToSET ⟅ D ⟆ ⟆} {y = D} (F D)
-    isIsoβ (D , isUnivD , isLeftFibD) .inv = G (D , isUnivD , isLeftFibD)
-    isIsoβ (D , isUnivD , isLeftFibD) .sec = eq-dF→≡ eq
-      where
-      eq : eq-dF (G (D , isUnivD , isLeftFibD) ⋆ᵈᶠ F (D , isUnivD , isLeftFibD)) dC-idFunct
-      eq .eq-dF-ob a = refl
-      eq .eq-dF-hom f = isPropMor (is-disp-preorder D) _ _ _ _ _
-    isIsoβ (D , isUnivD , isLeftFibD) .ret = eq-dF→≡ eq
-      where
-      eq : eq-dF (F (D , isUnivD , isLeftFibD) ⋆ᵈᶠ G (D , isUnivD , isLeftFibD)) dC-idFunct
-      eq .eq-dF-ob a = refl
-      eq .eq-dF-hom f = isPropMor (is-disp-preorder (fst (functToSET→dispCat ⟅ dispCat→functToSET ⟅ (D , isUnivD , isLeftFibD) ⟆ ⟆))) _ _ _ _ _
-      
-    α : NatIso (functToSET→dispCat ∘F dispCat→functToSET) 𝟙⟨ leftFibrUnivDispPreorderCat C ℓD ℓD ⟩
+    isIsoβ : (D : ob (leftFibrUnivDispPreorderCat C ℓD ℓD)) → isIso (leftFibrUnivDispPreorderCat C ℓD ℓD) {x = U ⟅ D ⟆} {y = D} (F D)
+    isIsoβ D .inv = G D
+    isIsoβ D .sec = dispPreorderFunct≡ (fst D) _ _ λ _ → refl 
+    isIsoβ D .ret = dispPreorderFunct≡ (fst (U ⟅ D ⟆)) _ _ λ _ → refl
+    
+    α : NatIso U 𝟙⟨ leftFibrUnivDispPreorderCat C ℓD ℓD ⟩
     α .trans = β
     α .nIso = isIsoβ

@@ -1,6 +1,7 @@
 module Filtered-Colimits.General.Lemma where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
@@ -11,15 +12,7 @@ open import Cubical.Data.Sigma
 open Iso
 
 isSet→isPropPathP : {ℓ : Level} → (A : I → Type ℓ) → ((i : I) → isSet (A i)) → (a0 : A i0) → (a1 : A i1) → isProp (PathP A a0 a1)
-isSet→isPropPathP A set a0 a1 p q i j = pi≡qi j i
-  where
-  pi≡qi : PathP (λ i → p i ≡ q i) refl refl
-  pi≡qi = isProp→PathP (λ i → set i (p i) (q i)) refl refl
-
-fst-Σ-subst : {ℓ ℓ' ℓ'' : Level} → {A : Type ℓ} → {a a' : A} → {p : a ≡ a'} →
-              (P : A → Type ℓ') → (Q : (a : A) → P a → Type ℓ'') → (x : P a) → (y : Q a x) →
-              fst (subst (λ a → Σ (P a) (Q a)) p (x , y)) ≡ subst P p x
-fst-Σ-subst P Q x y = refl
+isSet→isPropPathP A isSetA a0 a1 p q = isSet→SquareP (λ _ → isSetA) p q refl refl
 
 subst-subst≡subst2 : {ℓ ℓ' ℓ'' : Level} → {A : Type ℓ} → {B : Type ℓ'} → {w x : A} → {y z : B} →
                      (C : A → B → Type ℓ'') → (p : w ≡ x) → (q : y ≡ z) → (c : C w y) →
@@ -43,3 +36,20 @@ subst-subst B p q b = J (λ z q → subst B q (subst B p b) ≡ subst B (p ∙ q
 
 congSubst : {ℓ ℓ' ℓ'' : Level} → {A : Type ℓ} → (B : A → Type ℓ') → (C : A → Type ℓ'') → {x y : A} → (p : x ≡ y) → (f : {a : A} → B a → C a) → (b : B x) → f (subst B p b) ≡ subst C p (f b)
 congSubst B C {x} {y} p f b = J (λ y p → f (subst B p b) ≡ subst C p (f b)) (cong f (substRefl {B = B} b) ∙ sym (substRefl {B = C} (f b))) p
+
+subst2-filler : {ℓ ℓ' ℓ'' : Level} → {A : Type ℓ} → {x x' : A} → {B : Type ℓ'} → {y y' : B} → (C : A → B → Type ℓ'') → (p : x ≡ x') → (q : y ≡ y') → (c : C x y) →
+                PathP (λ i → C (p i) (q i)) c (subst2 C p q c)
+subst2-filler C p q = transport-filler (cong₂ C p q)
+
+isPropΣCancel : {ℓ ℓ' : Level} → {A : Type ℓ} → {B : A → Type ℓ'} → isProp A → isProp (Σ A B) → (a : A) → isProp (B a)
+isPropΣCancel {A = A} {B} isPropA isPropΣAB a b b' = subst (λ p → PathP (λ i → B (p i)) b b') q (cong snd p)
+  where
+  p : (a , b) ≡ (a , b')
+  p = isPropΣAB (a , b) (a , b')
+  
+  q : cong fst p ≡ refl
+  q = isProp→isSet isPropA a a (cong fst p) refl
+
+≃→isProp : {ℓ ℓ' : Level} → {A : Type ℓ} → {B : Type ℓ'} → A ≃ B → isProp A → isProp B
+≃→isProp f isPropA b b' = sym (secEq f b) ∙ cong (equivFun f) (isPropA _ _) ∙ secEq f b'
+

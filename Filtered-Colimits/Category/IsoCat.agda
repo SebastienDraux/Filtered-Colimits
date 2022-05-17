@@ -3,6 +3,9 @@ module Filtered-Colimits.Category.IsoCat where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Isomorphism using (Iso ; isoToEquiv ; iso)
+
+open import Cubical.Data.Sigma
 
 open import Cubical.Categories.Category
 open import Cubical.Categories.Functor
@@ -16,8 +19,10 @@ private
   variable
     ℓC ℓC' ℓD ℓD' : Level
 
+open Iso
 open Category
 open CatIso
+open isIso
 open Functor
 open isUnivalent
 
@@ -35,10 +40,7 @@ module _ {C : Category ℓC ℓC'} where
   makeIso f g p = record { inv = inv f ; sec = cong (λ h → inv f ⋆⟨ C ⟩ h) (sym p) ∙ sec f ; ret = cong (λ h → h ⋆⟨ C ⟩ inv f) (sym p) ∙ ret f }
 
   invIso : {x y : C .ob} → CatIso C x y → CatIso C y x
-  invIso f .mor = inv f
-  invIso f .inv = mor f
-  invIso f .sec = ret f
-  invIso f .ret = sec f
+  invIso f = catiso (inv f) (mor f) (ret f) (sec f)
 
   compIso : {x y z : C .ob} → CatIso C x y → CatIso C y z → CatIso C x z
   compIso f g .mor = mor f ⋆⟨ C ⟩ mor g
@@ -75,48 +77,73 @@ seqIso C f g = compIso {C = C} f g
 infixl 15 seqIso
 syntax seqIso C f g = f ⋆ᵢ⟨ C ⟩ g
 
-module _ {C : Category ℓC ℓC'} where
-         
-  makeIsoPath : {x y : C .ob} → (f g : CatIso C x y) → (mor f ≡ mor g) → f ≡ g
-  makeIsoPath {x} {y} f g p = CatIso≡ f g p q
+module _ {C : Category ℓC ℓC'}
+         {x y : C .ob} where
+
+  isProp-isIso : (f : C [ x , y ]) → isProp (isIso C f)
+  isProp-isIso f isIso-f isIso-f' = eq
     where
-    q : inv f ≡ inv g
-    q = 
-      inv f ≡⟨ sym (⋆IdR C (inv f)) ⟩
-      inv f ⋆⟨ C ⟩ id C ≡⟨ cong (λ g → inv f ⋆⟨ C ⟩ g) (sym (ret g)) ⟩
-      inv f ⋆⟨ C ⟩ (mor g ⋆⟨ C ⟩ inv g) ≡⟨ sym (⋆Assoc C (inv f) (mor g) (inv g)) ⟩
-      (inv f ⋆⟨ C ⟩ mor g) ⋆⟨ C ⟩ inv g ≡⟨ cong (λ h →  (inv f ⋆⟨ C ⟩ h) ⋆⟨ C ⟩ inv g) (sym p) ⟩
-      (inv f ⋆⟨ C ⟩ mor f) ⋆⟨ C ⟩ inv g ≡⟨ cong (λ f → f ⋆⟨ C ⟩ inv g) (sec f) ⟩
-      (id C) ⋆⟨ C ⟩ inv g ≡⟨ ⋆IdL C (inv g) ⟩
-      inv g ∎
-      
-  module _ {x y : C .ob}
-           (f : CatIso C x y) where
+    p : inv isIso-f ≡ inv isIso-f'
+    p = 
+      inv isIso-f                                            ≡⟨ sym (⋆IdR C (inv isIso-f)) ⟩
+      inv isIso-f ⋆⟨ C ⟩ id C                                ≡⟨ cong (λ g → inv isIso-f ⋆⟨ C ⟩ g) (sym (ret isIso-f')) ⟩
+      inv isIso-f ⋆⟨ C ⟩ (f ⋆⟨ C ⟩ inv isIso-f')             ≡⟨ sym (⋆Assoc C (inv isIso-f) f (inv isIso-f')) ⟩
+      (inv isIso-f ⋆⟨ C ⟩ f) ⋆⟨ C ⟩ inv isIso-f'             ≡⟨ cong (λ f → f ⋆⟨ C ⟩ inv isIso-f') (sec isIso-f) ⟩
+      (id C) ⋆⟨ C ⟩ inv isIso-f' ≡⟨ ⋆IdL C (inv isIso-f') ⟩
+      inv isIso-f' ∎
 
-    ⋆ᵢIdL : idCatIso ⋆ᵢ⟨ C ⟩ f ≡ f
-    ⋆ᵢIdL = makeIsoPath (idCatIso ⋆ᵢ⟨ C ⟩ f) f (⋆IdL C (mor f))
+    eq : isIso-f ≡ isIso-f'
+    eq i .inv = p i
+    eq i .sec = isProp→PathP {B = λ i → p i ⋆⟨ C ⟩ f ≡ id C} (λ _ → isSetHom C _ _) (sec isIso-f) (sec isIso-f') i
+    eq i .ret = isProp→PathP {B = λ i → f ⋆⟨ C ⟩ p i ≡ id C} (λ _ → isSetHom C _ _) (ret isIso-f) (ret isIso-f') i
 
-    ⋆ᵢIdR : f ⋆ᵢ⟨ C ⟩ idCatIso ≡ f
-    ⋆ᵢIdR = makeIsoPath (f ⋆ᵢ⟨ C ⟩ idCatIso) f (⋆IdR C (mor f))
+  CatIso≃ΣisIso : CatIso C x y ≃ Σ (C [ x , y ]) (isIso C)
+  CatIso≃ΣisIso = isoToEquiv (iso (λ f → (mor f) , CatIso→isIso f) _ (λ _ → refl) λ _ → refl)
 
-    ⋆ᵢInvL : invIso f ⋆ᵢ⟨ C ⟩ f ≡ idCatIso
-    ⋆ᵢInvL = makeIsoPath (invIso f ⋆ᵢ⟨ C ⟩ f) idCatIso (sec f)
+module _ {C : Category ℓC ℓC'}
+         {x y : C .ob} where
+         
+  makeIsoPath : {x' y' : ob C} → (p : x ≡ x') → (p' : y ≡ y') → (f : CatIso C x y) → (g : CatIso C x' y') →
+                PathP (λ i → C [ p i , p' i ]) (mor f) (mor g) → PathP (λ i → CatIso C (p i) (p' i)) f g
+  makeIsoPath p p' f g path-mor = subst2 (λ f g → PathP (λ i → CatIso C (p i) (p' i)) f g) (retEq CatIso≃ΣisIso f) (retEq CatIso≃ΣisIso g) path-CatIso
+    where
+    path-isIso : PathP (λ i → Σ (C [ p i , p' i ]) (isIso C {x = p i} {y = p' i})) (equivFun CatIso≃ΣisIso f) (equivFun CatIso≃ΣisIso g)
+    path-isIso = ΣPathPProp isProp-isIso path-mor
 
-    ⋆ᵢInvR : f ⋆ᵢ⟨ C ⟩ invIso f ≡ idCatIso
-    ⋆ᵢInvR = makeIsoPath (f ⋆ᵢ⟨ C ⟩ invIso f) idCatIso (ret f)
+    path-CatIso : PathP (λ i → CatIso C (p i) (p' i)) (equivFun (invEquiv CatIso≃ΣisIso) (equivFun CatIso≃ΣisIso f)) (equivFun (invEquiv CatIso≃ΣisIso) (equivFun CatIso≃ΣisIso g))
+    path-CatIso i = equivFun (invEquiv CatIso≃ΣisIso) (path-isIso i)
+
+  makeIso≡ : (f g : CatIso C x y) → mor f ≡ mor g → f ≡ g
+  makeIso≡ = makeIsoPath refl refl
+
+module _ {C : Category ℓC ℓC'}
+         {x y : C .ob}
+         (f : CatIso C x y) where
+
+  ⋆ᵢIdL : idCatIso ⋆ᵢ⟨ C ⟩ f ≡ f
+  ⋆ᵢIdL = makeIso≡ (idCatIso ⋆ᵢ⟨ C ⟩ f) f (⋆IdL C (mor f))
+
+  ⋆ᵢIdR : f ⋆ᵢ⟨ C ⟩ idCatIso ≡ f
+  ⋆ᵢIdR = makeIso≡ (f ⋆ᵢ⟨ C ⟩ idCatIso) f (⋆IdR C (mor f))
+
+  ⋆ᵢInvL : invIso f ⋆ᵢ⟨ C ⟩ f ≡ idCatIso
+  ⋆ᵢInvL = makeIso≡ (invIso f ⋆ᵢ⟨ C ⟩ f) idCatIso (sec f)
+
+  ⋆ᵢInvR : f ⋆ᵢ⟨ C ⟩ invIso f ≡ idCatIso
+  ⋆ᵢInvR = makeIso≡ (f ⋆ᵢ⟨ C ⟩ invIso f) idCatIso (ret f)
 
 module _ {C : Category ℓC ℓC'}
          {D : Category ℓD ℓD'}
          (F : Functor C D) where
 
   iso-F-id : {x : C .ob} → F ⟪ idCatIso {x = x} ⟫ᵢ ≡ idCatIso
-  iso-F-id {x} = makeIsoPath (F ⟪ idCatIso ⟫ᵢ) idCatIso (F-id F)
+  iso-F-id {x} = makeIso≡ (F ⟪ idCatIso ⟫ᵢ) idCatIso (F-id F)
 
   iso-F-seq : {x y z : C .ob} → (f : CatIso C x y) → (g : CatIso C y z) → F ⟪ f ⋆ᵢ⟨ C ⟩ g ⟫ᵢ ≡ F ⟪ f ⟫ᵢ ⋆ᵢ⟨ D ⟩ F ⟪ g ⟫ᵢ
-  iso-F-seq f g = makeIsoPath (F ⟪ f ⋆ᵢ⟨ C ⟩ g ⟫ᵢ) (F ⟪ f ⟫ᵢ ⋆ᵢ⟨ D ⟩ F ⟪ g ⟫ᵢ) (F-seq F (mor f) (mor g))
+  iso-F-seq f g = makeIso≡ (F ⟪ f ⋆ᵢ⟨ C ⟩ g ⟫ᵢ) (F ⟪ f ⟫ᵢ ⋆ᵢ⟨ D ⟩ F ⟪ g ⟫ᵢ) (F-seq F (mor f) (mor g))
 
   iso-F-inv : {x y : C .ob} → (f : CatIso C x y) → F ⟪ invIso f ⟫ᵢ ≡ invIso (F ⟪ f ⟫ᵢ)
-  iso-F-inv f = makeIsoPath (F ⟪ invIso f ⟫ᵢ) (invIso (F ⟪ f ⟫ᵢ)) refl
+  iso-F-inv f = makeIso≡ (F ⟪ invIso f ⟫ᵢ) (invIso (F ⟪ f ⟫ᵢ)) refl
 
 module _ (C : Category ℓC ℓC') where
 
@@ -179,7 +206,7 @@ module _ (C : Category ℓC ℓC') where
       invP refl ∎
 
   symPathToIso : {x y : ob C} → (p : x ≡ y) → pathToIso {C = C} (sym p) ≡ invIso (pathToIso {C = C} p)
-  symPathToIso {x} {y} p = makeIsoPath (pathToIso {C = C} (sym p)) (invIso (pathToIso {C = C} p)) (symMorP p)
+  symPathToIso {x} {y} p = makeIso≡ (pathToIso {C = C} (sym p)) (invIso (pathToIso {C = C} p)) (symMorP p)
 
   seqPathToIso : {x y z : ob C} → (p : x ≡ y) → (q : y ≡ z) → pathToIso (p ∙ q) ≡ pathToIso p ⋆ᵢ⟨ C ⟩ pathToIso q
   seqPathToIso {x} {y} {z} p q = J (λ z q → pathToIso (p ∙ q) ≡ pathToIso p ⋆ᵢ⟨ C ⟩ pathToIso q)  eqRefl q
@@ -194,7 +221,7 @@ module _ (C : Category ℓC ℓC') where
   injMorP : {x y : ob C} → isUnivalent C → (p q : x ≡ y) → morP p ≡ morP q → p ≡ q
   injMorP {x} {y} isUnivC p q mor≡ = 
     p                                              ≡⟨ sym (retEq equiv p) ⟩
-    equivFun (invEquiv equiv) (equivFun equiv p)   ≡⟨ cong (λ f → equivFun (invEquiv equiv) f) (makeIsoPath (equivFun equiv p) (equivFun equiv q) mor≡) ⟩
+    equivFun (invEquiv equiv) (equivFun equiv p)   ≡⟨ cong (λ f → equivFun (invEquiv equiv) f) (makeIso≡ (equivFun equiv p) (equivFun equiv q) mor≡) ⟩
     equivFun (invEquiv equiv) (equivFun equiv q)   ≡⟨ retEq equiv q ⟩
     q ∎
     where
@@ -211,4 +238,22 @@ morPFunct {C = C} {D} {F} {G} F≡G x = J (λ G F≡G → morP (FUNCTOR C D) F�
     morP D refl                                ∎
 
 
+module _ (C : Category ℓC ℓC') where
       
+  lSubstSeq : {x x' y z : ob C} → (p : x' ≡ x) → (f : C [ x' , y ]) → (g : C [ y , z ]) → PathP (λ i → C [ p i , z ]) (f ⋆⟨ C ⟩ g) (subst (λ x → C [ x , y ]) p f ⋆⟨ C ⟩ g)
+  lSubstSeq p f g i = subst-filler (λ x → C [ x , _ ]) p f i ⋆⟨ C ⟩ g
+
+  rSubstSeq : {x y z z' : ob C} → (p : z ≡ z') → (f : C [ x , y ]) → (g : C [ y , z ]) → PathP (λ i → C [ x , p i ]) (f ⋆⟨ C ⟩ g) (f ⋆⟨ C ⟩ subst (λ z → C [ y , z ]) p g)
+  rSubstSeq p f g i = f ⋆⟨ C ⟩ subst-filler (λ z → C [ _ , z ]) p g i
+
+  subst2Seq : {x x' y z z' : ob C} → (p : x ≡ x') → (q : z ≡ z') → (f : C [ x , y ]) → (g : C [ y , z ]) →
+               PathP (λ i → C [ p i , q i ]) (f ⋆⟨ C ⟩ g) (subst (λ x → C [ x , y ]) p f ⋆⟨ C ⟩ subst (λ z → C [ y , z ]) q g)
+  subst2Seq p q f g i = subst-filler (λ x → C [ x , _ ]) p f i ⋆⟨ C ⟩ subst-filler (λ z → C [ _ , z ]) q g i
+
+  subst3Seq :  {x x' y y' z z' : ob C} → (p : x ≡ x') → (q : y ≡ y') → (r : z ≡ z') → (f : C [ x , y ]) → (g : C [ y , z ]) →
+               PathP (λ i → C [ p i , r i ]) (f ⋆⟨ C ⟩ g) (subst2 (λ x y → C [ x , y ]) p q f ⋆⟨ C ⟩ subst2 (λ y z → C [ y , z ]) q r g)
+
+  subst3Seq p q r f g i = subst2-filler (λ x y → C [ x , y ]) p q f i ⋆⟨ C ⟩ subst2-filler (λ y z → C [ y , z ]) q r g i
+
+  substId : {x x' : ob C} → (p : x ≡ x') → PathP (λ i → C [ p i , p i ]) (id C) (id C)
+  substId p i = id C

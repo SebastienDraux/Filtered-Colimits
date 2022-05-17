@@ -4,6 +4,8 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.Path
+open import Cubical.Foundations.Transport
 
 open import Cubical.Relation.Binary.Poset
 
@@ -35,9 +37,10 @@ record dispCat (C : Category ℓC ℓC') (ℓD ℓD' : Level) : Type (ℓ-max (�
     dC-homSet : {x y : ob C} → (f : C [ x , y ]) → (X : dC-ob x) → (Y : dC-ob y) → isSet (dC-hom f X Y)
     dC-id : {x : ob C} → {X : dC-ob x} → dC-hom (id C) X X
     dC-⋆ : {x y z : ob C} → {X : dC-ob x} → {Y : dC-ob y} → {Z : dC-ob z} → {f : C [ x , y ]} → {g : C [ y , z ]} → dC-hom f X Y → dC-hom g Y Z → dC-hom (f ⋆⟨ C ⟩ g) X Z
-    dC-⋆IdL : {x y : ob C} → {f : C [ x , y ]}  → {X : dC-ob x} → {Y : dC-ob y} → (F : dC-hom f X Y) → subst (λ f → dC-hom f X Y) (⋆IdL C f) (dC-⋆ dC-id F) ≡ F
-    dC-⋆IdR : {x y : ob C} → {f : C [ x , y ]} → {X : dC-ob x} → {Y : dC-ob y} → (F : dC-hom f X Y) → subst (λ f → dC-hom f X Y) (⋆IdR C f) (dC-⋆ F dC-id) ≡ F
-    dC-⋆Assoc : {w x y z : ob C} → {W : dC-ob w} → {X : dC-ob x} → {Y : dC-ob y} → {Z : dC-ob z} → {f : C [ w , x ]} → {g : C [ x , y ]} → {h : C [ y , z ]} → (F : dC-hom f W X) → (G : dC-hom g X Y) → (H : dC-hom h Y Z) → subst (λ f⋆g⋆h → dC-hom f⋆g⋆h W Z) (⋆Assoc C f g h) ((dC-⋆ (dC-⋆ F G) H)) ≡ dC-⋆ F (dC-⋆ G H)
+    dC-⋆IdL : {x y : ob C} → {f : C [ x , y ]}  → {X : dC-ob x} → {Y : dC-ob y} → (F : dC-hom f X Y) → PathP (λ i → dC-hom (⋆IdL C f i) X Y) (dC-⋆ dC-id F) F
+    dC-⋆IdR : {x y : ob C} → {f : C [ x , y ]} → {X : dC-ob x} → {Y : dC-ob y} → (F : dC-hom f X Y) → PathP (λ i → dC-hom (⋆IdR C f i) X Y) (dC-⋆ F dC-id) F
+    dC-⋆Assoc : {w x y z : ob C} → {W : dC-ob w} → {X : dC-ob x} → {Y : dC-ob y} → {Z : dC-ob z} → {f : C [ w , x ]} → {g : C [ x , y ]} → {h : C [ y , z ]} →
+                (F : dC-hom f W X) → (G : dC-hom g X Y) → (H : dC-hom h Y Z) → PathP (λ i → dC-hom (⋆Assoc C f g h i) W Z) (dC-⋆ (dC-⋆ F G) H) (dC-⋆ F (dC-⋆ G H))
 
 open dispCat
 
@@ -64,9 +67,9 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
     totalCat .Hom[_,_] (x , X) (y , Y) = Σ[ f ∈ C [ x , y ] ] D [ f , X , Y ]ᴰ
     totalCat .id {x , X} = id C , dC-id D
     totalCat ._⋆_ (f , F) (g , G) = f ⋆⟨ C ⟩ g , F ⋆⟨ D ⟩ᴰ G
-    totalCat .⋆IdL (f , F) = ΣPathTransport→PathΣ (id C ⋆⟨ C ⟩ f , dC-id D ⋆⟨ D ⟩ᴰ F) (f , F) (⋆IdL C f , dC-⋆IdL D F)
-    totalCat .⋆IdR (f , F) = ΣPathTransport→PathΣ (f ⋆⟨ C ⟩ id C , F ⋆⟨ D ⟩ᴰ dC-id D) (f , F) (⋆IdR C f , dC-⋆IdR D F)
-    totalCat .⋆Assoc (f , F) (g , G) (h , H) = ΣPathTransport→PathΣ ((f ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ h , (F ⋆⟨ D ⟩ᴰ G) ⋆⟨ D ⟩ᴰ H) (f ⋆⟨ C ⟩ (g ⋆⟨ C ⟩ h) , F ⋆⟨ D ⟩ᴰ (G ⋆⟨ D ⟩ᴰ H)) (⋆Assoc C f g h , dC-⋆Assoc D F G H)
+    totalCat .⋆IdL (f , F) = ΣPathP (⋆IdL C _ , dC-⋆IdL D F)
+    totalCat .⋆IdR (f , F) = ΣPathP (⋆IdR C _ , dC-⋆IdR D F)
+    totalCat .⋆Assoc (f , F) (g , G) (h , H) = ΣPathP (⋆Assoc C _ _ _ , dC-⋆Assoc D F G H)
     totalCat .isSetHom {x , X} {y , Y} = isSetΣ (isSetHom C) (λ f → dC-homSet D f X Y)
   
     projFunct : Functor totalCat C
@@ -81,62 +84,14 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
   
     Σ→disp : Σ[ E ∈ Category ℓD ℓD' ] (Functor E C) → dispCat C (ℓ-max ℓC ℓD) (ℓ-max ℓC' ℓD')
     Σ→disp (E , F) .dC-ob x = fiber (F-ob F) x
-    Σ→disp (E , F) .dC-hom {x} {y} f (X , px) (Y , py) = fiber (F-hom F {x = X} {y = Y}) (morP C px ⋆⟨ C ⟩ f ⋆⟨ C ⟩ invP C py)
+    Σ→disp (E , F) .dC-hom {x} {y} f (X , px) (Y , py) = fiber (F-hom F {x = X} {y = Y}) (subst2 (λ x y → C [ x , y ]) (sym px) (sym py) f) --(morP C px ⋆⟨ C ⟩ f ⋆⟨ C ⟩ invP C py)
     Σ→disp (E , F) .dC-homSet f (X , px) (Y , py) = isSetΣ (isSetHom E) (λ f → isProp→isSet (isSetHom C _ _))
-    Σ→disp (E , F) .dC-id {x} {X , p} = (id E) , eq
-      where
-      eq : F ⟪ id E ⟫ ≡ (morP C p ⋆⟨ C ⟩ id C) ⋆⟨ C ⟩ invP C p
-      eq = 
-        F ⟪ id E ⟫                               ≡⟨ F-id F ⟩
-        id C                                     ≡⟨ sym (retMorP C p) ⟩
-        morP C p ⋆⟨ C ⟩ invP C p                  ≡⟨ cong (λ f → f ⋆⟨ C ⟩ invP C p) (sym (⋆IdR C (morP C p))) ⟩
-        (morP C p ⋆⟨ C ⟩ id C) ⋆⟨ C ⟩ invP C p    ∎ 
-    Σ→disp (E , F) .dC-⋆ {x} {y} {z} {X , px} {Y , py} {Z , pz} {g} {h} (G , qG) (H , qH) = (G ⋆⟨ E ⟩ H) , eq
-      where
-      eq : F ⟪ G ⋆⟨ E ⟩ H ⟫ ≡ (morP C px ⋆⟨ C ⟩ (g ⋆⟨ C ⟩ h)) ⋆⟨ C ⟩ invP C pz
-      eq =
-        F ⟪ G ⋆⟨ E ⟩ H ⟫
-            ≡⟨ F-seq F _ _ ⟩
-        F ⟪ G ⟫ ⋆⟨ C ⟩ F ⟪ H ⟫
-            ≡⟨ cong (λ f → f ⋆⟨ C ⟩ F ⟪ H ⟫) qG ⟩
-        ((morP C px ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ invP C py) ⋆⟨ C ⟩ F ⟪ H ⟫
-            ≡⟨ cong (λ f → ((morP C px ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ invP C py) ⋆⟨ C ⟩ f) qH ⟩ 
-        ((morP C px ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ invP C py) ⋆⟨ C ⟩ ((morP C py ⋆⟨ C ⟩ h) ⋆⟨ C ⟩ invP C pz)
-            ≡⟨ ⋆Assoc C _ _ _ ⟩
-        (morP C px ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ (invP C py ⋆⟨ C ⟩ ((morP C py ⋆⟨ C ⟩ h) ⋆⟨ C ⟩ invP C pz))
-            ≡⟨ cong (λ f → (morP C px ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ f) (sym (⋆Assoc C _ _ _)) ⟩
-        (morP C px ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ ((invP C py ⋆⟨ C ⟩ (morP C py ⋆⟨ C ⟩ h)) ⋆⟨ C ⟩ invP C pz)
-            ≡⟨ cong (λ f →  (morP C px ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ (f ⋆⟨ C ⟩ invP C pz)) (sym (⋆Assoc C _ _ _)) ⟩
-        (morP C px ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ (((invP C py ⋆⟨ C ⟩ morP C py) ⋆⟨ C ⟩ h) ⋆⟨ C ⟩ invP C pz)
-            ≡⟨ cong (λ f → (morP C px ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ ((f ⋆⟨ C ⟩ h) ⋆⟨ C ⟩ invP C pz)) (secMorP C py) ⟩
-        (morP C px ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ ((id C ⋆⟨ C ⟩ h) ⋆⟨ C ⟩ invP C pz)
-            ≡⟨ cong (λ f →  (morP C px ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ (f ⋆⟨ C ⟩ invP C pz)) (⋆IdL C _) ⟩
-        (morP C px ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ (h ⋆⟨ C ⟩ invP C pz)
-            ≡⟨ sym (⋆Assoc C _ _ _) ⟩
-         ((morP C px ⋆⟨ C ⟩ g) ⋆⟨ C ⟩ h) ⋆⟨ C ⟩ invP C pz
-            ≡⟨ cong (λ f → f ⋆⟨ C ⟩ invP C pz) (⋆Assoc C _ _ _) ⟩
-        (morP C px ⋆⟨ C ⟩ (g ⋆⟨ C ⟩ h)) ⋆⟨ C ⟩ invP C pz ∎
-    Σ→disp (E , F) .dC-⋆IdL {x} {y} {f} {X , px} {Y , py} (G , p) = ΣPathP (eq , (toPathP (isSetHom C _ _ _ _)))
-      where
-      eq : subst (λ _ → E [ X , Y ]) (⋆IdL C f) (id E ⋆⟨ E ⟩ G) ≡ G
-      eq = 
-        subst (λ _ → E [ X , Y ]) (⋆IdL C f) (id E ⋆⟨ E ⟩ G)   ≡⟨ transportRefl (id E ⋆⟨ E ⟩ G) ⟩
-        id E ⋆⟨ E ⟩ G                                           ≡⟨ ⋆IdL E _ ⟩
-        G                                                       ∎
-    Σ→disp (E , F) .dC-⋆IdR {x} {y} {f} {X , px} {Y , py} (G , p) = ΣPathP (eq , (toPathP (isSetHom C _ _ _ _)))
-      where
-      eq : subst (λ _ → E [ X , Y ]) (⋆IdL C f) (G ⋆⟨ E ⟩ id E) ≡ G
-      eq = 
-        subst (λ _ → E [ X , Y ]) (⋆IdL C f) (G ⋆⟨ E ⟩ id E)   ≡⟨ transportRefl (G ⋆⟨ E ⟩ id E) ⟩
-        G ⋆⟨ E ⟩ id E                                           ≡⟨ ⋆IdR E _ ⟩
-        G                                                       ∎
-    Σ→disp (E , F) .dC-⋆Assoc {w} {x} {y} {z} {(W , pw)} {(X , px)} {(Y , py)} {(Z , pz)} {g} {h} {k} (G , pG) (H , pH) (K , pK) = ΣPathP (eq , toPathP (isSetHom C _ _ _ _))
-      where
-      eq : subst (λ _ → E [ W , Z ]) (⋆Assoc C g h k) ((G ⋆⟨ E ⟩ H) ⋆⟨ E ⟩ K) ≡ G ⋆⟨ E ⟩ (H ⋆⟨ E ⟩ K)
-      eq = 
-         subst (λ _ → E [ W , Z ]) (⋆Assoc C g h k) ((G ⋆⟨ E ⟩ H) ⋆⟨ E ⟩ K)   ≡⟨ transportRefl ((G ⋆⟨ E ⟩ H) ⋆⟨ E ⟩ K) ⟩
-         (G ⋆⟨ E ⟩ H) ⋆⟨ E ⟩ K                                                 ≡⟨ ⋆Assoc E _ _ _ ⟩
-         G ⋆⟨ E ⟩ (H ⋆⟨ E ⟩ K)                                                 ∎
+    Σ→disp (E , F) .dC-id {x} {X , p} = id E , F-id F ∙ sym (fromPathP (substId C (sym p)))
+    Σ→disp (E , F) .dC-⋆ {X = X , px} {Y , py} {Z , pz} {g} {h} (G , qG) (H , qH) = G ⋆⟨ E ⟩ H ,
+              F-seq F _ _ ∙ cong₂ (λ FG FH → FG ⋆⟨ C ⟩ FH) qG qH ∙ sym (fromPathP (subst3Seq C (sym px) (sym py) (sym pz) g h))
+    Σ→disp (E , F) .dC-⋆IdL (G , p) = ΣPathP (⋆IdL E _ , isProp→PathP (λ _ → isSetHom C _ _) _ _)
+    Σ→disp (E , F) .dC-⋆IdR (G , p) = ΣPathP (⋆IdR E _ , isProp→PathP (λ _ → isSetHom C _ _) _ _) 
+    Σ→disp (E , F) .dC-⋆Assoc (G , pG) (H , pH) (K , pK) = ΣPathP ((⋆Assoc E _ _ _) , isProp→PathP (λ _ → isSetHom C _ _) _ _)
 
 module _ {ℓC ℓC' ℓD ℓD' : Level}
          {C : Category ℓC ℓC'}
@@ -169,8 +124,12 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
     leftFib-getHom :  D [ f , X , leftFib-getOb ]ᴰ
     leftFib-getHom = snd (fst (isLeftFibD f X))
 
-    leftFib-unicityOb : ((Y , F) : Σ[ Y ∈ D ⦅ y ⦆ ] (D [ f , X , Y ]ᴰ)) → leftFib-getOb  ≡ Y
+    leftFib-unicityOb : ((Y , F) : Σ[ Y ∈ D ⦅ y ⦆ ] (D [ f , X , Y ]ᴰ)) → leftFib-getOb ≡ Y
     leftFib-unicityOb (Y , F) = cong fst (snd (isLeftFibD f X) (Y , F))
+
+    leftFib-unicityHom : ((Y , F) : Σ[ Y ∈ D ⦅ y ⦆ ] (D [ f , X , Y ]ᴰ)) → PathP (λ i → D [ f , X , leftFib-unicityOb (Y , F) i ]ᴰ) leftFib-getHom F
+    leftFib-unicityHom (Y , F) = cong snd (snd (isLeftFibD f X) (Y , F)) 
+    
 
 module _ {ℓD ℓD' : Level}
          {C : Category ℓC ℓC'}
@@ -178,7 +137,7 @@ module _ {ℓD ℓD' : Level}
 
   isCocartesian : {x y : ob C} → (f : C [ x , y ]) → (X : D ⦅ x ⦆) → (Y : D ⦅ y ⦆) → D [ f , X , Y ]ᴰ → Type (ℓ-max (ℓ-max ℓC ℓC') (ℓ-max ℓD ℓD'))
   isCocartesian {x} {y} f X Y F = {z : ob C} → {g : C [ y , z ]} → {h : C [ x , z ]} → (p : f ⋆⟨ C ⟩ g ≡ h) → {Z : D ⦅ z ⦆} → (H : D [ h , X , Z ]ᴰ) →
-                                           ∃![ G ∈ D [ g , Y , Z ]ᴰ ] subst (λ h → D [ h , X , Z ]ᴰ) p (F ⋆⟨ D ⟩ᴰ G) ≡ H
+                                           ∃![ G ∈ D [ g , Y , Z ]ᴰ ] PathP (λ i →  D [ p i , X , Z ]ᴰ) (F ⋆⟨ D ⟩ᴰ G) H
                                            
   isCocartesian-getHom : {x y z : ob C} → (f : C [ x , y ])→ {g : C [ y , z ]} → {h : C [ x , z ]} → (p : f ⋆⟨ C ⟩ g ≡ h) →
                          (X : D ⦅ x ⦆) → (Y : D ⦅ y ⦆) → (Z : D ⦅ z ⦆)→ (F : D [ f , X , Y ]ᴰ) → D [ h , X , Z ]ᴰ → isCocartesian f X Y F → D [ g , Y , Z ]ᴰ
