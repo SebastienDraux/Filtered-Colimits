@@ -9,6 +9,7 @@ open import Cubical.Foundations.GroupoidLaws using (lUnit; rUnit)
 open import Cubical.Categories.Category
 open import Cubical.Categories.Functor
 
+open import Filtered-Colimits.General.Lemma
 open import Filtered-Colimits.DisplayedCategories.DisplayedCategories
 open import Filtered-Colimits.DisplayedCategories.IsoDispCat
 open import Filtered-Colimits.DisplayedCategories.CocartesianMorphisms
@@ -20,6 +21,7 @@ private
 open Iso
 open Category
 open dispCat
+open dispCatIso
 
 module _ {C : Category ℓC ℓC'} where
 
@@ -87,6 +89,10 @@ module _ {C : Category ℓC ℓC'}
   dF-rUnit i .dF-id = rUnit (dF-id 𝑭) (~ i)
   dF-rUnit i .dF-seq F G =  rUnit (dF-seq 𝑭 _ _) (~ i)
 
+  preservPathToIso : {x : ob C} {X Y : D ⦅ x ⦆} → (p : X ≡ Y) → 𝑭 ⟪ dC-mor (dC-pathToIso D p) ⟫ᴰ ≡ dC-mor (dC-pathToIso E (cong (𝑭 ⟅_⟆ᴰ) p))
+  preservPathToIso p = J (λ Y p → 𝑭 ⟪ dC-mor (dC-pathToIso D p) ⟫ᴰ ≡ dC-mor (dC-pathToIso E (cong (𝑭 ⟅_⟆ᴰ) p)))
+                         (cong (λ F → 𝑭 ⟪ dC-mor F ⟫ᴰ) (dC-pathToIsoRefl D) ∙ dF-id 𝑭 ∙ sym (cong dC-mor (dC-pathToIsoRefl E))) p
+
 module _ {C : Category ℓC ℓC'}
          {D : dispCat C ℓD ℓD'}
          {E : dispCat C ℓE ℓE'} where
@@ -125,11 +131,6 @@ module _ {C : Category ℓC ℓC'}
   open eq-dF
 
   module _ {𝑭 𝑮 : dispCat-Funct D E} where
-  
-    ≡eq-dF : (eqFG eqFG' : eq-dF 𝑭 𝑮) → ({x : ob C} → (X : D ⦅ x ⦆) → eq-dF-ob eqFG X ≡ eq-dF-ob eqFG' X) → eqFG ≡ eqFG'
-    ≡eq-dF eqFG eqFG' ≡eq-dF-ob i .eq-dF-ob X = ≡eq-dF-ob X i
-    ≡eq-dF eqFG eqFG' ≡eq-dF-ob i .eq-dF-hom {f = f} {X} {Y} F j = isSet→SquareP {A = λ i j → E [ f , ≡eq-dF-ob X i j , ≡eq-dF-ob Y i j ]ᴰ}
-                                                                                  (λ i j → dC-homSet E f _ _) (λ j → eq-dF-hom eqFG F j) (λ j → eq-dF-hom eqFG' F j) refl refl i j
 
     eq-dF→≡ : eq-dF 𝑭 𝑮 → 𝑭 ≡ 𝑮
     eq-dF→≡ eqFG i .dF-ob X = eq-dF-ob eqFG X i
@@ -157,3 +158,12 @@ module _ {C : Category ℓC ℓC'}
 
     ≡≃eq-dF : (𝑭 ≡ 𝑮) ≃ (eq-dF 𝑭 𝑮)
     ≡≃eq-dF = isoToEquiv Iso-≡-eq-dF
+
+    ≡-≡-dF : (p q : 𝑭 ≡ 𝑮) → ({x : ob C} → (X : D ⦅ x ⦆) → cong (_⟅ X ⟆ᴰ) p ≡ cong (_⟅ X ⟆ᴰ) q) → p ≡ q
+    ≡-≡-dF p q p-ob≡q-ob = isoFunInjective Iso-≡-eq-dF p q ≡eq-dF
+      where
+      ≡eq-dF : ≡→eq-dF p ≡ ≡→eq-dF q
+      ≡eq-dF i .eq-dF-ob X = p-ob≡q-ob X i
+      ≡eq-dF i .eq-dF-hom F = isProp→PathP {B = λ i → PathP (λ j → E [ _ , p-ob≡q-ob _ i j , p-ob≡q-ob _ i j ]ᴰ) (𝑭 ⟪ F ⟫ᴰ) (𝑮 ⟪ F ⟫ᴰ)}
+                                            (λ i → isSet→isPropPathP (λ j → E [ _ , p-ob≡q-ob _ i j , p-ob≡q-ob _ i j ]ᴰ) (λ j → dC-homSet E _ _ _) (𝑭 ⟪ F ⟫ᴰ) (𝑮 ⟪ F ⟫ᴰ))
+                                            (cong (_⟪ F ⟫ᴰ) p) (cong (_⟪ F ⟫ᴰ) q) i

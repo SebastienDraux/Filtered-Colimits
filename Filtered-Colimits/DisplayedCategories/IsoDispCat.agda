@@ -15,9 +15,10 @@ open import Filtered-Colimits.General.Lemma
 open import Filtered-Colimits.Category.IsoCat
 open import Filtered-Colimits.DisplayedCategories.DisplayedCategories
 
+
 private
   variable
-    ℓC ℓC' ℓD ℓD' : Level
+    ℓC ℓC' ℓD ℓD' ℓE ℓE' : Level
 
 open Category
 open dispCat
@@ -146,8 +147,7 @@ module _ {C : Category ℓC ℓC'}
   dC-pathToIso {X = X} p = J (λ X' p → dispCatIso D X X' idCatIso) idDispCatIso p
 
   dC-pathToIsoRefl : {x : ob C} → {X : D ⦅ x ⦆} → dC-pathToIso refl ≡ idDispCatIso {X = X}
-  dC-pathToIsoRefl {X = X} = JRefl (λ X' p → dispCatIso D X X' idCatIso) idDispCatIso
-  
+  dC-pathToIsoRefl {X = X} = JRefl (λ X' p → dispCatIso D X X' idCatIso) idDispCatIso  
 
   isUnivalent-dC : Type (ℓ-max (ℓ-max ℓC ℓD) ℓD')
   isUnivalent-dC = {x : ob C} → (X X' : D ⦅ x ⦆) → isEquiv (dC-pathToIso {x = x} {X = X} {X' = X'})

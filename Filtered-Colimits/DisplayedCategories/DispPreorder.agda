@@ -35,10 +35,7 @@ module _ (C : Category ℓC ℓC')
   dispPreorderCat .⋆IdL = dF-lUnit
   dispPreorderCat .⋆IdR = dF-rUnit
   dispPreorderCat .⋆Assoc = dF-Assoc
-  dispPreorderCat .isSetHom {D} {D'} F G p q = isoFunInjective Iso-≡-eq-dF p q (≡eq-dF (≡→eq-dF p) (≡→eq-dF q) eq)
-    where
-    eq : {x : ob C} → (X : disp-cat D ⦅ x ⦆) → eq-dF-ob (≡→eq-dF p) X ≡ eq-dF-ob (≡→eq-dF q) X
-    eq X = isSetFiber (is-disp-preorder D') _ (F ⟅ X ⟆ᴰ) (G ⟅ X ⟆ᴰ) (eq-dF-ob (≡→eq-dF p) X) (eq-dF-ob (≡→eq-dF q) X)
+  dispPreorderCat .isSetHom {D} {D'} F G p q = ≡-≡-dF p q (λ X → isSetFiber (is-disp-preorder D') _ _ _ _ _)
 
 
 module _ {ℓD ℓD' ℓE ℓE' : Level}

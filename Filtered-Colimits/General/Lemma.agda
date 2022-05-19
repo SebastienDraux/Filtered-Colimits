@@ -5,6 +5,7 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Path
 
 open import Cubical.Data.Sigma
 
@@ -53,3 +54,7 @@ isPropΣCancel {A = A} {B} isPropA isPropΣAB a b b' = subst (λ p → PathP (λ
 ≃→isProp : {ℓ ℓ' : Level} → {A : Type ℓ} → {B : Type ℓ'} → A ≃ B → isProp A → isProp B
 ≃→isProp f isPropA b b' = sym (secEq f b) ∙ cong (equivFun f) (isPropA _ _) ∙ secEq f b'
 
+compPathP₂ : {ℓ ℓ' ℓ'' : Level} → {A : Type ℓ} → {B : Type ℓ'} → (C : A → B → Type ℓ'') → {a a' a'' : A} → {b b' b'' : B} → {c : C a b} → {c' : C a' b'} → {c'' : C a'' b''}
+             (p : a ≡ a') → (p' : a' ≡ a'') → (q : b ≡ b') → (q' : b' ≡ b'') → PathP (λ i → C (p i) (q i)) c c' → PathP (λ i → C (p' i) (q' i)) c' c'' →
+             PathP (λ i → C ((p ∙ p') i) ((q ∙ q') i)) c c''
+compPathP₂ C {c = c} p p' q q' P Q i = comp (λ j → C (compPath-filler p p' j i) (compPath-filler q q' j i)) (λ j → λ {(i = i0) → c ; (i = i1) → Q j }) (P i)
