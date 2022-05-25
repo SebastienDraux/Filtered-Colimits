@@ -92,6 +92,10 @@ module _ {C : Category ℓC ℓC'}
   preservPathToIso : {x : ob C} {X Y : D ⦅ x ⦆} → (p : X ≡ Y) → 𝑭 ⟪ dC-mor (dC-pathToIso D p) ⟫ᴰ ≡ dC-mor (dC-pathToIso E (cong (𝑭 ⟅_⟆ᴰ) p))
   preservPathToIso p = J (λ Y p → 𝑭 ⟪ dC-mor (dC-pathToIso D p) ⟫ᴰ ≡ dC-mor (dC-pathToIso E (cong (𝑭 ⟅_⟆ᴰ) p)))
                          (cong (λ F → 𝑭 ⟪ dC-mor F ⟫ᴰ) (dC-pathToIsoRefl D) ∙ dF-id 𝑭 ∙ sym (cong dC-mor (dC-pathToIsoRefl E))) p
+    
+  preservLeftFib-ob : {x y : ob C} → (isLeftFibD : isLeftFibration D) → (isLeftFibE : isLeftFibration E) → (f : C [ x , y ]) → (X : D ⦅ x ⦆) →
+                      leftFib-getOb E isLeftFibE f (𝑭 ⟅ X ⟆ᴰ) ≡ 𝑭 ⟅ leftFib-getOb D isLeftFibD f X ⟆ᴰ
+  preservLeftFib-ob isLeftFibD isLeftFibE f X = leftFib-unicityOb E isLeftFibE f (𝑭 ⟅ X ⟆ᴰ) (𝑭 ⟅ leftFib-getOb D isLeftFibD f X ⟆ᴰ , 𝑭 ⟪ leftFib-getHom D isLeftFibD f X ⟫ᴰ)
 
 module _ {C : Category ℓC ℓC'}
          {D : dispCat C ℓD ℓD'}
