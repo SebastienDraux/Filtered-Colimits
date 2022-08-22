@@ -240,35 +240,33 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
 
       uniqueFact-ob (unicity-ob f X Y Y' F F' i) j = {!!} --path-≡ j i
         where
+        p₀ = uniqueFact-ob X
         p = uniqueFact-ob Y
         p' = uniqueFact-ob Y'
         
         q = cong (factReflection ⟅_⟆ᴰ) (unicity-ob f X Y Y' F F')
         q' = cong (𝑮 ⟅_⟆ᴰ) (unicity-ob f X Y Y' F F')
-          
-        u : dispCatIso reflection Y Y' idCatIso
-        u = dC-pathToIso reflection (unicity-ob f X Y Y' F F')
-          
-        Fu : dispCatIso E (factReflection ⟅ Y ⟆ᴰ) (factReflection ⟅ Y' ⟆ᴰ) idCatIso 
-        Fu = dC-pathToIso E q
+
+        path-p : PathP (λ i → E [ f ,  p₀ i , p i ]ᴰ) (factReflection ⟪ F ⟫ᴰ) (𝑮 ⟪ F ⟫ᴰ)
+        path-p = uniqueFact-hom X Y F
+
+        path-q : PathP (λ i → E [ f , factReflection ⟅ X ⟆ᴰ , q i ]ᴰ) (factReflection ⟪ F ⟫ᴰ) (factReflection ⟪ F' ⟫ᴰ)
+        path-q = congP (λ i F → factReflection ⟪ F ⟫ᴰ) (unicity-hom f X Y Y' F F')
+
+        path-p' : PathP (λ i → E [ f ,  p₀ i , p' i ]ᴰ) (factReflection ⟪ F' ⟫ᴰ) (𝑮 ⟪ F' ⟫ᴰ)
+        path-p' = uniqueFact-hom X Y' F'
+
+        path-q' : PathP (λ i → E [ f , 𝑮 ⟅ X ⟆ᴰ , (sym q') i ]ᴰ) (𝑮 ⟪ F' ⟫ᴰ) (𝑮 ⟪ F ⟫ᴰ)
+        path-q' = congP (λ i F → 𝑮 ⟪ F ⟫ᴰ) (symP (unicity-hom f X Y Y' F F'))
+
+        path : PathP (λ i → E [ f ,  p₀ i , (q ∙ p' ∙ sym q') i ]ᴰ) (factReflection ⟪ F ⟫ᴰ) (𝑮 ⟪ F ⟫ᴰ)
+        path = {!!}
+
+        goal : q ∙ p' ∙ sym q' ≡ p
+        goal = cong (λ P → fst (PathPΣ P)) (isProp→isSet (isContr→isProp (isLeftFibE f (factReflection ⟅ X ⟆ᴰ)))
+               (factReflection ⟅ Y ⟆ᴰ , factReflection ⟪ F ⟫ᴰ) (𝑮 ⟅ Y ⟆ᴰ , subst (λ X → E [ f , X , 𝑮 ⟅ Y ⟆ᴰ ]ᴰ) (sym p₀) (𝑮 ⟪ F ⟫ᴰ))
+                 (ΣPathP (q ∙ p' ∙ sym q' , {!!})) (ΣPathP (p , {!!})))
          
-        Gu : dispCatIso E (𝑮 ⟅ Y ⟆ᴰ) (𝑮 ⟅ Y' ⟆ᴰ) idCatIso
-        Gu = dC-pathToIso E q'
-
-        path-imMor : PathP (λ i → E [ id C , uniqueFact-ob Y i , uniqueFact-ob Y' i ]ᴰ) (factReflection ⟪ dC-mor u ⟫ᴰ) (𝑮 ⟪ dC-mor u ⟫ᴰ)
-        path-imMor = uniqueFact-hom Y Y' (dC-mor u) 
-
-        path-mor : PathP (λ i → E [ id C , p i , p' i ]ᴰ) (dC-mor Fu) (dC-mor Gu)
-        path-mor = subst2 (PathP (λ i → E [ id C , p i , p' i ]ᴰ))
-                          (preservPathToIso factReflection (unicity-ob f X Y Y' F F'))
-                          (preservPathToIso 𝑮 (unicity-ob f X Y Y' F F')) path-imMor
-
-        path-iso : PathP (λ i → dispCatIso E (p i) (p' i) idCatIso) Fu Gu
-        path-iso = makeDispCatIsoPath E p p' Fu Gu path-mor
-
-        path-≡ : PathP (λ i → uniqueFact-ob Y i ≡ uniqueFact-ob Y' i) q q'
-        path-≡ = equivFun (invEquiv (congPathEquiv (λ _ → dC-univEquiv E isUnivE _ _))) path-iso
-                       
       uniqueFact-hom .(fromD X) .(fromD Y) (fromD _ X Y F) = cong (_⟪ F ⟫ᴰ) (sym factG)
       uniqueFact-hom {f = f} X .(leftFib-ob f X) (leftFib-hom f .X) =
         subst (λ r → PathP (λ i → E [ f , r i , (q ∙ p) i ]ᴰ) (factReflection ⟪ F ⟫ᴰ) (𝑮 ⟪ F ⟫ᴰ)) (sym (rUnit r))
@@ -292,40 +290,36 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
         path2 : PathP (λ i → E [ f , 𝑮 ⟅ X ⟆ᴰ , p i ]ᴰ) (leftFib-getHom E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ)) (𝑮 ⟪ F ⟫ᴰ)
         path2 = leftFib-unicityHom E isLeftFibE f (𝑮 ⟅ X ⟆ᴰ) (𝑮 ⟅ Y ⟆ᴰ , 𝑮 ⟪ F ⟫ᴰ)
           
-      uniqueFact-hom X .(unicity-ob f X Y Y' F F' i) (unicity-hom f X Y Y' F F' i) j = {!!}
-     --   isSet→SquareP {A = λ i j → E [ f , uniqueFact-ob X j , uniqueFact-ob (unicity-ob f X Y Y' F F' i) j ]ᴰ} (λ _ _ → dC-homSet E _ _ _)
-       --                (uniqueFact-hom _ _ F) (uniqueFact-hom _ _ F')
-       --                (λ i → factReflection ⟪ unicity-hom f X Y Y' F F' i ⟫ᴰ) (λ i → 𝑮 ⟪ unicity-hom f X Y Y' F F' i ⟫ᴰ) i j
-       -- isSet→SquareP {A = λ i j → E [ f , uniqueFact-ob X j , uniqueFact-ob (unicity-ob f X Y Y' F F' i) j ]ᴰ} (λ _ _ → dC-homSet E _ _ _)
-       --               (uniqueFact-hom _ _ F) (uniqueFact-hom _ _ F')
-       --               (λ i → factReflection ⟪ unicity-hom f X Y Y' F F' i ⟫ᴰ) (λ i → 𝑮 ⟪ unicity-hom f X Y Y' F F' i ⟫ᴰ) i j
-      
+      uniqueFact-hom X .(unicity-ob f X Y Y' F F' i) (unicity-hom f X Y Y' F F' i) = 
+        isSet→SquareP {A = λ i j → E [ f , uniqueFact-ob X j , uniqueFact-ob (unicity-ob f X Y Y' F F' i) j ]ᴰ} (λ _ _ → dC-homSet E _ _ _)
+                       (uniqueFact-hom _ _ F) (uniqueFact-hom _ _ F')
+                       (λ i → factReflection ⟪ unicity-hom f X Y Y' F F' i ⟫ᴰ) (λ i → 𝑮 ⟪ unicity-hom f X Y Y' F F' i ⟫ᴰ) i
       uniqueFact-hom X Z (seq f g .X Y .Z F G) = {!!}
-      --  subst2 (λ F G → PathP (λ i → E [ f ⋆⟨ C ⟩ g , uniqueFact-ob X i , uniqueFact-ob Z i ]ᴰ) F G) (sym (dF-seq factReflection F G)) (sym (dF-seq 𝑮 F G))
+     --   subst2 (λ F G → PathP (λ i → E [ f ⋆⟨ C ⟩ g , uniqueFact-ob X i , uniqueFact-ob Z i ]ᴰ) F G) (sym (dF-seq factReflection F G)) (sym (dF-seq 𝑮 F G))
      --           λ i → uniqueFact-hom X Y F i ⋆⟨ E ⟩ᴰ uniqueFact-hom Y Z G i
-      uniqueFact-hom .(fromD X) .(fromD Z) (fromD-seq f g X Y Z F G i) j = {!!}
-      --  isSet→SquareP {A = λ i j → E [ f ⋆⟨ C ⟩ g , uniqueFact-ob (fromD X) j , uniqueFact-ob (fromD Z) j ]ᴰ} (λ _ _ → dC-homSet E _ _ _)
-     --                  (uniqueFact-hom _ _ (fromD (f ⋆⟨ C ⟩ g) X Z (F ⋆⟨ D ⟩ᴰ G)))
-      --                 (uniqueFact-hom _ _ (seq f g (fromD X) (fromD Y) (fromD Z) (fromD f X Y F) (fromD g Y Z G)))
-      --                 (λ i → factReflection ⟪ fromD-seq f g X Y Z F G i ⟫ᴰ) (λ i → 𝑮 ⟪ fromD-seq f g X Y Z F G i ⟫ᴰ) i j
+      uniqueFact-hom .(fromD X) .(fromD Z) (fromD-seq f g X Y Z F G i) j =
+        isSet→SquareP {A = λ i j → E [ f ⋆⟨ C ⟩ g , uniqueFact-ob (fromD X) j , uniqueFact-ob (fromD Z) j ]ᴰ} (λ _ _ → dC-homSet E _ _ _)
+                       (uniqueFact-hom _ _ (fromD (f ⋆⟨ C ⟩ g) X Z (F ⋆⟨ D ⟩ᴰ G)))
+                       (uniqueFact-hom _ _ (seq f g (fromD X) (fromD Y) (fromD Z) (fromD f X Y F) (fromD g Y Z G)))
+                       (λ i → factReflection ⟪ fromD-seq f g X Y Z F G i ⟫ᴰ) (λ i → 𝑮 ⟪ fromD-seq f g X Y Z F G i ⟫ᴰ) i j
       uniqueFact-hom X .X (refl-id .X) =
         subst2 (λ F G → PathP (λ i → E [ id C , uniqueFact-ob X i , uniqueFact-ob X i ]ᴰ) F G) (sym (dF-id factReflection {X = X})) (sym (dF-id 𝑮)) λ i → dC-id E 
-      uniqueFact-hom .(fromD X) .(fromD X) (fromD-id X i) j = {!!}
-      --  isSet→SquareP {A = λ i j → E [ id C , uniqueFact-ob (fromD X) j , uniqueFact-ob (fromD X) j ]ᴰ} (λ _ _ → dC-homSet E _ _ _)
-       --                (uniqueFact-hom _ _ (fromD (id C) X X (dC-id D))) (uniqueFact-hom _ _ (refl-id (fromD X)))
-      --                 (λ i → factReflection ⟪ fromD-id X i ⟫ᴰ) (λ i → 𝑮 ⟪ fromD-id X i ⟫ᴰ) i j
-      uniqueFact-hom X Y (refl-⋆IdL f X Y F i) j = {!!}
-    --    isSet→SquareP {A = λ i j → E [ ⋆IdL C f i , uniqueFact-ob X j , uniqueFact-ob Y j ]ᴰ} (λ _ _ → dC-homSet E _ _ _)
-     --                  (uniqueFact-hom _ _ (seq (id C) f X X Y (refl-id X) F)) (uniqueFact-hom _ _ F)
-      --                 (λ i → factReflection ⟪ refl-⋆IdL f X Y F i ⟫ᴰ) (λ i → 𝑮 ⟪ refl-⋆IdL f X Y F i ⟫ᴰ) i j
-      uniqueFact-hom X Y (refl-⋆IdR f X Y F i) j = {!!}
-       -- isSet→SquareP {A = λ i j → E [ ⋆IdR C f i , uniqueFact-ob X j , uniqueFact-ob Y j ]ᴰ} (λ _ _ → dC-homSet E _ _ _)
-         --              (uniqueFact-hom _ _ (seq f (id C) X Y Y F (refl-id Y))) (uniqueFact-hom _ _ F)
-          --             (λ i → factReflection ⟪ refl-⋆IdR f X Y F i ⟫ᴰ) (λ i → 𝑮 ⟪ refl-⋆IdR f X Y F i ⟫ᴰ) i j
-      uniqueFact-hom .W .Z (refl-⋆Assoc f g h W X Y Z F G H i) j = {!!}
-       -- isSet→SquareP {A = λ i j → E [ ⋆Assoc C f g h i , uniqueFact-ob W j , uniqueFact-ob Z j ]ᴰ} (λ _ _ → dC-homSet E _ _ _)
-         --              (uniqueFact-hom _ _ (seq (f ⋆⟨ C ⟩ g) h W Y Z (seq f g W X Y F G) H)) (uniqueFact-hom _ _ (seq f (g ⋆⟨ C ⟩ h) W X Z F (seq g h X Y Z G H)))
-        --               (λ i → factReflection ⟪ refl-⋆Assoc f g h W X Y Z F G H i ⟫ᴰ) (λ i → 𝑮 ⟪ refl-⋆Assoc f g h W X Y Z F G H i ⟫ᴰ) i j
+      uniqueFact-hom .(fromD X) .(fromD X) (fromD-id X i) j =
+        isSet→SquareP {A = λ i j → E [ id C , uniqueFact-ob (fromD X) j , uniqueFact-ob (fromD X) j ]ᴰ} (λ _ _ → dC-homSet E _ _ _)
+                       (uniqueFact-hom _ _ (fromD (id C) X X (dC-id D))) (uniqueFact-hom _ _ (refl-id (fromD X)))
+                       (λ i → factReflection ⟪ fromD-id X i ⟫ᴰ) (λ i → 𝑮 ⟪ fromD-id X i ⟫ᴰ) i j
+      uniqueFact-hom X Y (refl-⋆IdL f X Y F i) j =
+        isSet→SquareP {A = λ i j → E [ ⋆IdL C f i , uniqueFact-ob X j , uniqueFact-ob Y j ]ᴰ} (λ _ _ → dC-homSet E _ _ _)
+                       (uniqueFact-hom _ _ (seq (id C) f X X Y (refl-id X) F)) (uniqueFact-hom _ _ F)
+                       (λ i → factReflection ⟪ refl-⋆IdL f X Y F i ⟫ᴰ) (λ i → 𝑮 ⟪ refl-⋆IdL f X Y F i ⟫ᴰ) i j
+      uniqueFact-hom X Y (refl-⋆IdR f X Y F i) j =
+        isSet→SquareP {A = λ i j → E [ ⋆IdR C f i , uniqueFact-ob X j , uniqueFact-ob Y j ]ᴰ} (λ _ _ → dC-homSet E _ _ _)
+                       (uniqueFact-hom _ _ (seq f (id C) X Y Y F (refl-id Y))) (uniqueFact-hom _ _ F)
+                       (λ i → factReflection ⟪ refl-⋆IdR f X Y F i ⟫ᴰ) (λ i → 𝑮 ⟪ refl-⋆IdR f X Y F i ⟫ᴰ) i j
+      uniqueFact-hom .W .Z (refl-⋆Assoc f g h W X Y Z F G H i) j =
+        isSet→SquareP {A = λ i j → E [ ⋆Assoc C f g h i , uniqueFact-ob W j , uniqueFact-ob Z j ]ᴰ} (λ _ _ → dC-homSet E _ _ _)
+                       (uniqueFact-hom _ _ (seq (f ⋆⟨ C ⟩ g) h W Y Z (seq f g W X Y F G) H)) (uniqueFact-hom _ _ (seq f (g ⋆⟨ C ⟩ h) W X Z F (seq g h X Y Z G H)))
+                       (λ i → factReflection ⟪ refl-⋆Assoc f g h W X Y Z F G H i ⟫ᴰ) (λ i → 𝑮 ⟪ refl-⋆Assoc f g h W X Y Z F G H i ⟫ᴰ) i j
       uniqueFact-hom X Y (is-set f X Y F G p q i j) k =
         isSet→SquareP {A = λ j k → uniqueFact-hom _ _ (p j) k ≡ uniqueFact-hom _ _ (q j) k} (λ _ _ → isProp→isSet (dC-homSet E _ _ _ _ _))
                        (λ k → refl) (λ k → refl) (λ j i → factReflection ⟪ is-set f X Y F G p q i j ⟫ᴰ) (λ j i → 𝑮 ⟪ is-set f X Y F G p q i j ⟫ᴰ) j k i
